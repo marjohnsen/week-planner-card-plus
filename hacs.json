@@ -1,6 +1,6 @@
 {
   "name": "Week Planner Card Plus",
-  "content_in_root": false,
+  "content_in_root": true,
   "render_readme": false,
   "filename": "week-planner-card-plus.js"
 }
