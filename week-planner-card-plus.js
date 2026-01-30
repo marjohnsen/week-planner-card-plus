@@ -680,25 +680,44 @@ _rnrCloseEditDialog(){
     this.requestUpdate();
 }
 _rnrHandleDayClick(t,e){
-    try{
-        if(!this._rnrTapEmptyDayToAdd) return;
-        if(!e||!e.date) return;
+  try{
+    if(!this._rnrTapEmptyDayToAdd) return;
 
-        // Only act on days with no events (you asked for empty days)
-        if(e.events&&e.events.length) return;
+    // If the click started on an actual event chip (or its children), let the normal event-click behavior handle it.
+    const path = t && t.composedPath ? t.composedPath() : [];
+    for(const n of path){
+      if(!n) continue;
+      const cl = n.classList;
+      if(cl && cl.contains("event")) return;
+      // Don't trigger on header/action buttons
+      const tag = n.tagName;
+      if(tag==="HA-BUTTON"||tag==="MWC-BUTTON"||tag==="BUTTON"||tag==="A") return;
+    }
 
-        // Ignore clicks originating from interactive elements inside a day
-        const path=t&&t.composedPath?t.composedPath():[];
-        for(const n of path){
-            if(!n) continue;
-            const cl=n.classList;
-            if(cl&&(cl.contains("event")||cl.contains("weather")||cl.contains("rnr-actions"))) return;
-            const tag=n.tagName;
-            if(tag==="HA-BUTTON"||tag==="MWC-BUTTON"||tag==="BUTTON"||tag==="A") return;
-        }
+    // Robust date extraction from the clicked day element's data attributes (works even if the day model differs)
+    const el = t && t.currentTarget ? t.currentTarget : null;
+    let dateStr = null;
+    if(el && el.dataset){
+      const yy = el.dataset.year;
+      const mm = el.dataset.month;
+      const dd = el.dataset.date;
+      if(yy && mm && dd){
+        const m2 = String(mm).padStart(2,"0");
+        const d2 = String(dd).padStart(2,"0");
+        dateStr = `${yy}-${m2}-${d2}`;
+      }
+    }
 
-        this._rnrOpenAddEventForDate(e.date);
-    }catch(err){}
+    // Fallback to the internal day model if present
+    if(!dateStr && e && e.date){
+      if(e.date.toFormat) dateStr = e.date.toFormat("yyyy-LL-dd");
+      else if(e.date.year && e.date.month && e.date.day){
+        dateStr = `${e.date.year}-${String(e.date.month).padStart(2,"0")}-${String(e.date.day).padStart(2,"0")}`;
+      }
+    }
+
+    this._rnrOpenAddEventForDate(dateStr);
+  }catch(err){}
 }
 
   // Added: handler used by the "Add Event" button in the header
