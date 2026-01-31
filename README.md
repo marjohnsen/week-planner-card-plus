@@ -88,6 +88,7 @@ Add a card to a dashboard:
 
 ```yaml
 type: custom:week-planner-card-plus
+tapEmptyDayToAdd: true
 calendars:
   - entity: calendar.family_calendar
 days: 7
