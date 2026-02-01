@@ -31,6 +31,7 @@ Week Planner Card Plus works with **Home Assistant calendar entities** (`calenda
 - ✅ **View events** in the planner
 - ✅ **Add events**
 - ✅ **Delete events**
+- ✅ **Repeat** supported
 - ⚠️ **Edit support varies** by provider/integration and configuration
 
 ### Local Calendar (.ics)
