@@ -1,22 +1,25 @@
 # Week Planner Card Plus (Skylight-style)
 
 **Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
-This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.  
+This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.
 
 For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicely with the companion integration:
+
 - **ICS Calendar Tools** (add/edit/delete + repeat support for Local Calendar `.ics` calendars)  
   https://github.com/randrcomputers/ics-calendar-tools
 
 > If you only want the original Week Planner Card, see:  
-> FamousWolf/week-planner-card
+> https://github.com/FamousWolf/week-planner-card
 
 ---
 
 ## What’s different in “Plus”
-- ✅ Tap **any day** to open actions (Add / Edit / Delete)
+
 - ✅ **Skylight-style** UI flows (popup routing / interaction behavior)
 - ✅ Fixes for the **Add button** behavior (restored + reliable)
 - ✅ Fixes for **hash / popup routing** used in our Skylight-style dashboard
+- ✅ **Empty-day + empty-space click-to-add** (optional, built-in dialog)
+- ✅ **Edit remembers calendar** (Edit dialog preselects the clicked event’s calendar)
 - ✅ Optional pairing with **ICS Calendar Tools** so edits/deletes persist to **Local Calendar (.ics)**  
   https://github.com/randrcomputers/ics-calendar-tools
 
@@ -29,16 +32,16 @@ Week Planner Card Plus works with **Home Assistant calendar entities** (`calenda
 
 ### Cloud calendars (Google / CalDAV / etc.)
 - ✅ **View events** in the planner
-- ✅ **Add events**
+- ✅ **Add events** (built-in dialog)
 - ✅ **Delete events**
-- ✅ **Repeat** supported
+- ✅ **Repeat** supported (built-in dialog)
 - ⚠️ **Edit support varies** by provider/integration and configuration
 
 ### Local Calendar (.ics)
 - ✅ **View events**
 - ✅ **Add events**
 - ✅ **Edit/Delete** typically requires **ICS Calendar Tools** to modify the underlying `.ics` file
-- ✅ **Repeat (RRULE)** supported via ICS Calendar Tools
+- ✅ **Repeat (RRULE)** supported via **ICS Calendar Tools**
 
 ---
 
@@ -50,6 +53,7 @@ Week Planner Card Plus works with **Home Assistant calendar entities** (`calenda
 ## Installation
 
 ### HACS (Recommended)
+
 1. Make sure HACS is installed and working.
 2. Go to **HACS → Frontend**.
 3. Open the menu (top right) → **Custom repositories**.
@@ -60,7 +64,8 @@ Week Planner Card Plus works with **Home Assistant calendar entities** (`calenda
 7. Restart Home Assistant (or reload resources if you prefer).
 
 #### Add the Lovelace Resource
-HACS usually offers to add the resource automatically, but you can do it manually IF NEEDED ONLY:
+
+HACS usually offers to add the resource automatically, but you can do it manually if needed:
 
 **Settings → Dashboards → Resources → Add Resource**
 - URL (typical HACS path):
@@ -73,6 +78,7 @@ HACS usually offers to add the resource automatically, but you can do it manuall
 ---
 
 ### Manual Install (advanced)
+
 1. Copy the built `.js` file into:
    - `/config/www/`
    (or `/config/www/community/week-planner-card-plus/`)
@@ -86,38 +92,59 @@ Example:
 
 ---
 
-## IMPORTANT: Browser cache / `.js.gz`
-If you update the `.js` but nothing changes, Home Assistant / your browser may still be serving a compressed copy.
+## Basic Usage
 
-If you see a file like this in the same folder:
-- `week-planner-card-plus.js.gz`
+### New built-in Add dialog (recommended)
 
-Delete it, then hard refresh your browser:
-- **Ctrl+F5** (Windows)
-- **Cmd+Shift+R** (Mac)
+This uses the Plus card’s built-in Add dialog:
+- Clicking a totally empty day opens **Add**
+- Clicking empty space within a day that already has events opens **Add**
+- Clicking an event opens **Edit** (and the calendar is preselected based on the clicked event)
 
-This prevents “I updated it but it’s still old” headaches.
+```yaml
+type: custom:week-planner-card-plus
+tapEmptyDayToAdd: false           # legacy scripted popup (leave off)
+clickEmptyDayToAddPlus: true      # NEW built-in dialog
+calendars:
+  - entity: calendar.family_calendar
+```
+
+### Legacy scripted Add dialog (older dashboards)
+
+This uses the old “scripted” Add flow (kept for backwards compatibility).
+
+```yaml
+type: custom:week-planner-card-plus
+tapEmptyDayToAdd: true            # legacy scripted popup
+clickEmptyDayToAddPlus: false     # disable built-in dialog
+calendars:
+  - entity: calendar.family_calendar
+```
+
+> Tip: Use **only one** add mode. Set **either** `tapEmptyDayToAdd` **or** `clickEmptyDayToAddPlus` to `true` — not both.
 
 ---
 
-## Basic Usage
+## Notes on Repeat (Recurring Events)
 
-Add a card to a dashboard:
+- **Cloud calendars (Google/CalDAV/etc.)**: recurring events are created using Home Assistant’s calendar APIs (built-in dialog).
+- **Local Calendar (.ics)**: recurring events require writing an RRULE into the `.ics` file — use **ICS Calendar Tools** for add/update/delete with repeat support.
 
-```yaml
-Old popup(scripted)
-type: custom:week-planner-card-plus
-tapEmptyDayToAdd: true # This is old legacy popup
-clickEmptyDayToAddPlus: false # this is the new built in UI popup with recurring events support!
-calendars:
-  - entity: calendar.family_calendar
+---
 
-New popup with recurring support!
+## Options
 
-type: custom:week-planner-card-plus
-tapEmptyDayToAdd: false # This is old legacy popup
-clickEmptyDayToAddPlus: true # this is the new built in UI popup with recurring events support!
-calendars:
-  - entity: calendar.family_calendar
+### `clickEmptyDayToAddPlus` (boolean)
+When `true`, empty-day / empty-space clicks open the **built-in Add dialog** (recommended).
 
-```
+### `tapEmptyDayToAdd` (boolean)
+Legacy mode. When `true`, empty-day clicks use the **older scripted Add flow**.
+
+---
+
+## Companion integration (Local Calendar editing)
+
+If you want Local Calendar `.ics` **edit/delete/repeat** to behave like cloud calendars, install:
+
+- **ICS Calendar Tools**  
+  https://github.com/randrcomputers/ics-calendar-tools
