@@ -107,6 +107,7 @@ Add a card to a dashboard:
 Old popup(scripted)
 type: custom:week-planner-card-plus
 tapEmptyDayToAdd: true # This is old legacy popup
+clickEmptyDayToAddPlus: false # this is the new built in UI popup with recurring events support!
 calendars:
   - entity: calendar.family_calendar
 
