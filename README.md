@@ -1,11 +1,11 @@
 # Week Planner Card Plus (Skylight-style)
 
-**Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.
+**Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
+This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.  
 
-This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.
-
-For Local Calendar `.ics` edit/delete support, it’s designed to pair nicely with the companion integration:
-- **ICS Calendar Tools** (edit/delete support for Local Calendar `.ics` calendars)
+For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicely with the companion integration:
+- **ICS Calendar Tools** (add/edit/delete + repeat support for Local Calendar `.ics` calendars)  
+  https://github.com/randrcomputers/ics-calendar-tools
 
 > If you only want the original Week Planner Card, see:  
 > FamousWolf/week-planner-card
@@ -25,23 +25,25 @@ For Local Calendar `.ics` edit/delete support, it’s designed to pair nicely wi
 ## Calendar support (Google / cloud + Local Calendar)
 
 Week Planner Card Plus works with **Home Assistant calendar entities** (`calendar.*`) from many sources.  
-**What you can do (Add/Edit/Delete) depends on what your calendar integration supports.**
+**What you can do (Add/Edit/Delete/Repeat) depends on what your calendar integration supports.**
 
 ### Cloud calendars (Google / CalDAV / etc.)
 - ✅ **View events** in the planner
-- ✅ **Add events** (creates events on the selected calendar entity when supported by HA/integration)
-- ✅ **Delete events** when the calendar integration supports deletion in Home Assistant
-- ⚠️ **Edit support varies** by integration/provider and configuration
-
-> In other words: the card provides the UI actions, but the backend capability is provided by Home Assistant + the calendar integration.
+- ✅ **Add events**
+- ✅ **Delete events**
+- ⚠️ **Edit support varies** by provider/integration and configuration
 
 ### Local Calendar (.ics)
-- ✅ **View / Add events** (standard Local Calendar behavior)
-- ⚠️ **Edit/Delete** for Local Calendar `.ics` typically requires **ICS Calendar Tools** to modify the underlying `.ics` file.
+- ✅ **View events**
+- ✅ **Add events**
+- ✅ **Edit/Delete** typically requires **ICS Calendar Tools** to modify the underlying `.ics` file
+- ✅ **Repeat (RRULE)** supported via ICS Calendar Tools
 
 ---
 
 <img width="1903" height="961" alt="image" src="https://github.com/user-attachments/assets/beef1e76-9105-4a71-8ef1-2d6ef66e6c6a" />
+
+---
 
 ## Installation
 
@@ -82,14 +84,37 @@ Example:
 
 ---
 
+## IMPORTANT: Browser cache / `.js.gz`
+If you update the `.js` but nothing changes, Home Assistant / your browser may still be serving a compressed copy.
+
+If you see a file like this in the same folder:
+- `week-planner-card-plus.js.gz`
+
+Delete it, then hard refresh your browser:
+- **Ctrl+F5** (Windows)
+- **Cmd+Shift+R** (Mac)
+
+This prevents “I updated it but it’s still old” headaches.
+
+---
+
 ## Basic Usage
 
 Add a card to a dashboard:
 
 ```yaml
+Old popup(scripted)
 type: custom:week-planner-card-plus
-tapEmptyDayToAdd: true
+tapEmptyDayToAdd: true # This is old legacy popup
 calendars:
   - entity: calendar.family_calendar
-days: 7
+
+New popup with recurring support!
+
+type: custom:week-planner-card-plus
+tapEmptyDayToAdd: false # This is old legacy popup
+clickEmptyDayToAddPlus: true # this is the new built in UI popup with recurring events support!
+calendars:
+  - entity: calendar.family_calendar
+
 ```

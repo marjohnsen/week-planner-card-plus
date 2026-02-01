@@ -2,6 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
+console.info("[week-planner-card-plus] loaded patched build 2026-01-31a (empty-day built-in add option)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -418,7 +419,7 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
     ha-icon-picker {
       margin: 8px 0;
     }
-`,ry={};ry=JSON.parse('{"name":"week-planner-card","version":"1.13.1","description":"Custom Home Assistant card to display events for a number of days from one or several calendars.","source":"src/index.js","module":"dist/week-planner-card.js","targets":{"module":{"includeNodeModules":true,"optimize":true}},"scripts":{"watch":"parcel watch","build":"parcel build"},"repository":{"type":"git","url":"git+https://github.com/FamousWolf/week-planner-card.git"},"keywords":["lovelace"],"author":"Rudy Gnodde","licence":"MIT","bugs":{"url":"https://github.com/FamousWolf/week-planner-card/issues"},"homepage":"https://github.com/FamousWolf/week-planner-card","devDependencies":{"@parcel/optimizer-data-url":"^2.12.0","@parcel/transformer-inline-string":"^2.11.0","parcel":"^2.16.3","svgo":"^3.3.2"},"dependencies":{"lit":"^3.1.2","luxon":"^3.4.4"}}'),customElements.define("week-planner-card-plus",class extends es{static styles=i8;_initialized=!1;_loading=0;_events={};_calendarEvents={};_calendars;_numberOfDays;_numberOfDaysIsMonth;_updateInterval;_noCardBackground;_eventBackground;_compact;_language;_weather;_dateFormat;_timeFormat;_locationLink;_startDate;_hideWeekend;_startingDay;_startingDayOffset;_weatherForecast=null;_showLocation;_hidePastEvents;_hideDaysWithoutEvents;_hideTodayWithoutEvents;_filter;_filterText;_replaceTitleText;_combineSimilarEvents;_showLegend;_legendToggle;_actions;_columns;_loader;_showNavigation;_navigationOffset=0;_updateEventsTimeouts=[];static getConfigElement(){return document.createElement("week-planner-card-plus-editor")}static getStubConfig(){return{calendars:[],days:7,startingDay:"today",startingDayOffset:0,showWeekDayText:!0,hideWeekend:!1,noCardBackground:!1,compact:!1,weather:{showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1,useTwiceDaily:!1},locale:"en",showLocation:!1,hidePastEvents:!1,hideDaysWithoutEvents:!1,hideTodayWithoutEvents:!1,combineSimilarEvents:!1,showLegend:!1}}static get properties(){return{_days:{type:Array},_config:{type:Object},_error:{type:String},_currentEventDetails:{type:Object},_hideCalendars:{type:Array},_rnrEditOpen:{type:Boolean},_rnrEditDraft:{type:Object}}}setConfig(e){if(this._config=e,!e.calendars)throw Error("No calendars are configured");this._numberOfDaysIsMonth=this._isNumberOfDaysMonth(e.days??7),this._title=e.title??null,this._calendars=e.calendars,this._weather=this._getWeatherConfig(e.weather),this._numberOfDays=this._getNumberOfDays(e.days??7),this._hideWeekend=e.hideWeekend??!1,this._showNavigation=e.showNavigation??!1,this._startingDay=e.startingDay??"today",this._startingDayOffset=e.startingDayOffset??0,this._showWeekDayText=e.showWeekDayText??!0,this._startDate=this._getStartDate(),this._updateInterval=e.updateInterval??60,this._noCardBackground=e.noCardBackground??!1,this._eventBackground=e.eventBackground??"var(--card-background-color, inherit)",this._compact=e.compact??!1,this._dayFormat=e.dayFormat??null,this._dateFormat=e.dateFormat??"cccc d LLLL yyyy",this._timeFormat=e.timeFormat??"HH:mm",this._locationLink=e.locationLink??"https://www.google.com/maps/search/?api=1&query=",this._showTitle=e.showTitle??!0,this._showDescription=e.showDescription??!1,this._showLocation=e.showLocation??!1,this._hidePastEvents=e.hidePastEvents??!1,this._hideDaysWithoutEvents=e.hideDaysWithoutEvents??!1,this._hideTodayWithoutEvents=e.hideTodayWithoutEvents??!1,this._filter=e.filter??!1,this._filterText=e.filterText??!1,this._replaceTitleText=e.replaceTitleText??!1,this._combineSimilarEvents=e.combineSimilarEvents??!1,this._showLegend=e.showLegend??!1,this._legendToggle=e.legendToggle??!1,this._actions=e.actions??!1,this._columns=e.columns??{},this._maxEvents=e.maxEvents??!1,this._maxDayEvents=e.maxDayEvents??!1,this._hideCalendars=(e.calendars||[]).reduce((e,t)=>(t.initiallyHidden&&t.entity&&e.push(t.entity),e),[]),e.locale&&(eh.Settings.defaultLocale=e.locale),this._language=Object.assign({},{fullDay:"Entire day",noEvents:"No events",moreEvents:"More events",today:"Today",tomorrow:"Tomorrow",yesterday:"Yesterday",sunday:eh.Info.weekdays("long")[6],monday:eh.Info.weekdays("long")[0],tuesday:eh.Info.weekdays("long")[1],wednesday:eh.Info.weekdays("long")[2],thursday:eh.Info.weekdays("long")[3],friday:eh.Info.weekdays("long")[4],saturday:eh.Info.weekdays("long")[5]},e.texts??{}),this._calendarErrors=[],this._rnrTapEmptyDayToAdd=e.tapEmptyDayToAdd??!1,this._rnrAddEventPopupHash=e.addEventPopupHash??"#addcalendarevent",this._rnrAddEventHelpers=e.addEventHelpers??null,this._daysFromConfig=e.days,this._responsive=e.responsive??!1,this._minDayWidth=e.minDayWidth??120,this._maxDays=e.maxDays??7,this._applyResponsiveDays&&queueMicrotask?queueMicrotask(()=>this._applyResponsiveDays()):setTimeout(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()},0)}connectedCallback(){super.connectedCallback&&super.connectedCallback();this._setupResponsive&&this._setupResponsive();}disconnectedCallback(){this._teardownResponsive&&this._teardownResponsive();super.disconnectedCallback&&super.disconnectedCallback();}_setupResponsive(){if(!this._responsive)return;if(this._resizeObs)return;try{this._resizeObs=new ResizeObserver(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()});this._resizeObs.observe(this)}catch(e){this._winResizeHandler=()=>{this._applyResponsiveDays&&this._applyResponsiveDays()};window.addEventListener('resize',this._winResizeHandler)}}_teardownResponsive(){if(this._resizeObs){try{this._resizeObs.disconnect()}catch(e){}this._resizeObs=null}if(this._winResizeHandler){window.removeEventListener('resize',this._winResizeHandler);this._winResizeHandler=null}}_applyResponsiveDays(){if(!this._responsive)return;if(this._daysFromConfig&&this._isNumberOfDaysMonth(this._daysFromConfig))return;let e=0;try{e=this.getBoundingClientRect().width}catch(t){}e=e||this.offsetWidth||window.innerWidth||0;if(!e)return;let t=Number(this._minDayWidth)||120,n=Number(this._maxDays)||7;let r=Math.floor(e/t);r<1&&(r=1),r>n&&(r=n);this._numberOfDays!==r&&(this._numberOfDays=r,this.requestUpdate&&this.requestUpdate())}_isNumberOfDaysMonth(e){return"month"===String(e).toLowerCase().trim()}_getWeatherConfig(e){if(!e||"string"!=typeof e&&"object"!=typeof e)return null;let t={entity:null,showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1};return("string"==typeof e?t.entity=e:Object.assign(t,e),t.hasOwnProperty("entity")&&null!==t.entity)?t:null}render(){this._loader||(this._loader=this._getLoader()),this._initialized||(this._initialized=!0,this._waitForHassAndConfig());let e=[];this._noCardBackground&&e.push("nobackground"),this._compact&&e.push("compact");let t=["--event-background-color: "+this._eventBackground+";"];return this._columns.extraLarge&&t.push("--days-columns: "+this._columns.extraLarge+";"),this._columns.large&&t.push("--days-columns-lg: "+this._columns.large+";"),this._columns.medium&&t.push("--days-columns-md: "+this._columns.medium+";"),this._columns.small&&t.push("--days-columns-sm: "+this._columns.small+";"),this._columns.extraSmall&&t.push("--days-columns-xs: "+this._columns.extraSmall+";"),W`
+`,ry={};ry=JSON.parse('{"name":"week-planner-card","version":"1.13.1","description":"Custom Home Assistant card to display events for a number of days from one or several calendars.","source":"src/index.js","module":"dist/week-planner-card.js","targets":{"module":{"includeNodeModules":true,"optimize":true}},"scripts":{"watch":"parcel watch","build":"parcel build"},"repository":{"type":"git","url":"git+https://github.com/FamousWolf/week-planner-card.git"},"keywords":["lovelace"],"author":"Rudy Gnodde","licence":"MIT","bugs":{"url":"https://github.com/FamousWolf/week-planner-card/issues"},"homepage":"https://github.com/FamousWolf/week-planner-card","devDependencies":{"@parcel/optimizer-data-url":"^2.12.0","@parcel/transformer-inline-string":"^2.11.0","parcel":"^2.16.3","svgo":"^3.3.2"},"dependencies":{"lit":"^3.1.2","luxon":"^3.4.4"}}'),customElements.define("week-planner-card-plus",class extends es{static styles=i8;_initialized=!1;_loading=0;_events={};_calendarEvents={};_calendars;_numberOfDays;_numberOfDaysIsMonth;_updateInterval;_noCardBackground;_eventBackground;_compact;_language;_weather;_dateFormat;_timeFormat;_locationLink;_startDate;_hideWeekend;_startingDay;_startingDayOffset;_weatherForecast=null;_showLocation;_hidePastEvents;_hideDaysWithoutEvents;_hideTodayWithoutEvents;_filter;_filterText;_replaceTitleText;_combineSimilarEvents;_showLegend;_legendToggle;_actions;_columns;_loader;_showNavigation;_navigationOffset=0;_updateEventsTimeouts=[];static getConfigElement(){return document.createElement("week-planner-card-plus-editor")}static getStubConfig(){return{calendars:[],days:7,startingDay:"today",startingDayOffset:0,showWeekDayText:!0,hideWeekend:!1,noCardBackground:!1,compact:!1,weather:{showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1,useTwiceDaily:!1},locale:"en",showLocation:!1,hidePastEvents:!1,hideDaysWithoutEvents:!1,hideTodayWithoutEvents:!1,combineSimilarEvents:!1,showLegend:!1,tapEmptyDayToAdd:!1,clickEmptyDayToAddPlus:!1}}static get properties(){return{_days:{type:Array},_config:{type:Object},_error:{type:String},_currentEventDetails:{type:Object},_hideCalendars:{type:Array},_rnrEditOpen:{type:Boolean},_rnrEditDraft:{type:Object}}}setConfig(e){if(this._config=e,!e.calendars)throw Error("No calendars are configured");this._numberOfDaysIsMonth=this._isNumberOfDaysMonth(e.days??7),this._title=e.title??null,this._calendars=e.calendars,this._weather=this._getWeatherConfig(e.weather),this._numberOfDays=this._getNumberOfDays(e.days??7),this._hideWeekend=e.hideWeekend??!1,this._showNavigation=e.showNavigation??!1,this._startingDay=e.startingDay??"today",this._startingDayOffset=e.startingDayOffset??0,this._showWeekDayText=e.showWeekDayText??!0,this._startDate=this._getStartDate(),this._updateInterval=e.updateInterval??60,this._noCardBackground=e.noCardBackground??!1,this._eventBackground=e.eventBackground??"var(--card-background-color, inherit)",this._compact=e.compact??!1,this._dayFormat=e.dayFormat??null,this._dateFormat=e.dateFormat??"cccc d LLLL yyyy",this._timeFormat=e.timeFormat??"HH:mm",this._locationLink=e.locationLink??"https://www.google.com/maps/search/?api=1&query=",this._showTitle=e.showTitle??!0,this._showDescription=e.showDescription??!1,this._showLocation=e.showLocation??!1,this._hidePastEvents=e.hidePastEvents??!1,this._hideDaysWithoutEvents=e.hideDaysWithoutEvents??!1,this._hideTodayWithoutEvents=e.hideTodayWithoutEvents??!1,this._filter=e.filter??!1,this._filterText=e.filterText??!1,this._replaceTitleText=e.replaceTitleText??!1,this._combineSimilarEvents=e.combineSimilarEvents??!1,this._showLegend=e.showLegend??!1,this._legendToggle=e.legendToggle??!1,this._actions=e.actions??!1,this._columns=e.columns??{},this._maxEvents=e.maxEvents??!1,this._maxDayEvents=e.maxDayEvents??!1,this._hideCalendars=(e.calendars||[]).reduce((e,t)=>(t.initiallyHidden&&t.entity&&e.push(t.entity),e),[]),e.locale&&(eh.Settings.defaultLocale=e.locale),this._language=Object.assign({},{fullDay:"Entire day",noEvents:"No events",moreEvents:"More events",today:"Today",tomorrow:"Tomorrow",yesterday:"Yesterday",sunday:eh.Info.weekdays("long")[6],monday:eh.Info.weekdays("long")[0],tuesday:eh.Info.weekdays("long")[1],wednesday:eh.Info.weekdays("long")[2],thursday:eh.Info.weekdays("long")[3],friday:eh.Info.weekdays("long")[4],saturday:eh.Info.weekdays("long")[5]},e.texts??{}),this._calendarErrors=[],this._rnrTapEmptyDayToAdd=e.tapEmptyDayToAdd??!1,this._rnrClickEmptyDayToAddPlus=e.clickEmptyDayToAddPlus??!1,this.__rnrCfgLogged||(console.info('[week-planner-card-plus] cfg tapEmptyDayToAdd=',this._rnrTapEmptyDayToAdd,' clickEmptyDayToAddPlus=',this._rnrClickEmptyDayToAddPlus),this.__rnrCfgLogged=!0),this._rnrAddEventPopupHash=e.addEventPopupHash??"#addcalendarevent",this._rnrAddEventHelpers=e.addEventHelpers??null,this._daysFromConfig=e.days,this._responsive=e.responsive??!1,this._minDayWidth=e.minDayWidth??120,this._maxDays=e.maxDays??7,this._applyResponsiveDays&&queueMicrotask?queueMicrotask(()=>this._applyResponsiveDays()):setTimeout(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()},0)}connectedCallback(){super.connectedCallback&&super.connectedCallback();this._setupResponsive&&this._setupResponsive();}disconnectedCallback(){this._teardownResponsive&&this._teardownResponsive();super.disconnectedCallback&&super.disconnectedCallback();}_setupResponsive(){if(!this._responsive)return;if(this._resizeObs)return;try{this._resizeObs=new ResizeObserver(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()});this._resizeObs.observe(this)}catch(e){this._winResizeHandler=()=>{this._applyResponsiveDays&&this._applyResponsiveDays()};window.addEventListener('resize',this._winResizeHandler)}}_teardownResponsive(){if(this._resizeObs){try{this._resizeObs.disconnect()}catch(e){}this._resizeObs=null}if(this._winResizeHandler){window.removeEventListener('resize',this._winResizeHandler);this._winResizeHandler=null}}_applyResponsiveDays(){if(!this._responsive)return;if(this._daysFromConfig&&this._isNumberOfDaysMonth(this._daysFromConfig))return;let e=0;try{e=this.getBoundingClientRect().width}catch(t){}e=e||this.offsetWidth||window.innerWidth||0;if(!e)return;let t=Number(this._minDayWidth)||120,n=Number(this._maxDays)||7;let r=Math.floor(e/t);r<1&&(r=1),r>n&&(r=n);this._numberOfDays!==r&&(this._numberOfDays=r,this.requestUpdate&&this.requestUpdate())}_isNumberOfDaysMonth(e){return"month"===String(e).toLowerCase().trim()}_getWeatherConfig(e){if(!e||"string"!=typeof e&&"object"!=typeof e)return null;let t={entity:null,showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1};return("string"==typeof e?t.entity=e:Object.assign(t,e),t.hasOwnProperty("entity")&&null!==t.entity)?t:null}render(){this._loader||(this._loader=this._getLoader()),this._initialized||(this._initialized=!0,this._waitForHassAndConfig());let e=[];this._noCardBackground&&e.push("nobackground"),this._compact&&e.push("compact");let t=["--event-background-color: "+this._eventBackground+";"];return this._columns.extraLarge&&t.push("--days-columns: "+this._columns.extraLarge+";"),this._columns.large&&t.push("--days-columns-lg: "+this._columns.large+";"),this._columns.medium&&t.push("--days-columns-md: "+this._columns.medium+";"),this._columns.small&&t.push("--days-columns-sm: "+this._columns.small+";"),this._columns.extraSmall&&t.push("--days-columns-xs: "+this._columns.extraSmall+";"),W`
             <ha-card class="${e.join(" ")}" style="${t.join(" ")}">
                 <div class="card-content">
                     ${this._error?W`<div class="errors"><ha-alert alert-type="error">${this._error}</ha-alert></div>`:""}
@@ -429,6 +430,7 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
                         ${this._renderDays()}
                     </div>
                     ${this._renderEventDetailsDialog()}
+                    ${this._rnrRenderEditDialog()}
                     ${this._loader}
                 </div>
             </ha-card>
@@ -511,7 +513,7 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
                         data-end-hour="${e.end.toFormat("H")}"
                         data-end-minute="${e.end.toFormat("mm")}"
                         style="--border-color: ${e.colors[0]}"
-                        @click="${()=>{this._handleEventClick(e)}}"
+                        @click="${(ev)=>{this._handleEventClick(e,ev)}}"
                     >
                         ${e.colors.map(e=>t.indexOf(e)>-1?"":(t.push(e),W`
                                 <div
@@ -603,7 +605,7 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
                       const d = (e.originalStart && e.originalStart.toISODate) ? e.originalStart.toISODate()
                               : (e.start && e.start.toISODate) ? e.start.toISODate()
                               : null;
-                      this.rnrOpenAdd(d);
+                      this._rnrOpenAdd({dt:d});
                     }}">
                     <ha-icon icon="mdi:plus"></ha-icon>
                     Add
@@ -618,8 +620,7 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
                     </ha-button>
                 </div>
             </ha-dialog>
-            ${this._rnrRenderEditDialog()}
-        `:W``}_renderEventDetailsDialogHeading(){return W`
+            `:W``}_renderEventDetailsDialogHeading(){return W`
             <div class="header_title">
                 <span>${this._currentEventDetails.summary}</span>
                 <ha-icon-button
@@ -638,12 +639,84 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
                 ${e.toFormat(this._dateFormat+" "+this._timeFormat)+" - "+t.toFormat(this._timeFormat)}
             `:W`
             ${e.toFormat(this._dateFormat+" "+this._timeFormat)} - ${t.toFormat(this._dateFormat+" "+this._timeFormat)}
-        `}_getLoader(){let e=document.createElement("div");return e.className="loader",e.style.display="none",e}_updateLoader(){this._loading>0?this._loader.style.display="inherit":this._loader.style.display="none"}_getWeatherIcon(e){let t=e?.condition;return t?rf[t.toLowerCase()]:null}_waitForHassAndConfig(){this.hass&&this._calendars?this._updateEvents():window.setTimeout(()=>{this._waitForHassAndConfig()},50)}_subscribeToWeatherForecast(){this._loading++,this._updateLoader();let e=!0;this.hass.connection.subscribeMessage(t=>{this._weatherForecast=t.forecast??[],e&&(this._loading--,e=!1)},{type:"weather/subscribe_forecast",forecast_type:this._weather.useTwiceDaily?"twice_daily":"daily",entity_id:this._weather.entity})}_updateEvents(){if(this._loading>0)return;this._loading++,this._updateLoader(),this._clearUpdateEventsTimeouts(),this._events={},this._calendarEvents={},this._startDate=this._getStartDate(),this._numberOfDaysIsMonth&&(this._numberOfDays=this._startDate.daysInMonth);let e=this._startDate,t=this._startDate.plus({days:this._numberOfDays}),n=eh.DateTime.now(),i=this._startDate.toISO();this._weather&&null===this._weatherForecast&&this._subscribeToWeatherForecast();let r=0;this._calendars.forEach(a=>{if(!a.entity||!this.hass.states[a.entity])return;a.name||(a={...a,name:this.hass.formatEntityAttributeValue(this.hass.states[a.entity],"friendly_name")}),a.sorting||(a={...a,sorting:r});let s=r;this._loading++,this.hass.callApi("get","calendars/"+a.entity+"?start="+encodeURIComponent(e.toISO())+"&end="+encodeURIComponent(t.toISO())).then(e=>{this._startDate.toISO()!==i||(this._calendarErrors[s]="",e.forEach(e=>{if(this._isFilterEvent(e,a.filter??""))return;let t=this._convertApiDate(e.start),i=this._convertApiDate(e.end);if(this._hidePastEvents&&i<n)return;let r=this._isFullDay(t,i);r||this._isSameDay(t,i)?this._addEvent(e,t,i,r,a):this._handleMultiDayEvent(e,t,i,a)})),this._loading--}).catch(e=>{this._calendarErrors[s]='Error while fetching calendar "'+a.entity+'": '+(e.error??"Unknown error"),this._loading--}),r++});let a=window.setInterval(()=>{0===this._loading&&(clearInterval(a),this._updateCard(),this._updateLoader(),this._updateEventsTimeouts.push(window.setTimeout(()=>{this._updateEvents()},1e3*this._updateInterval)))},50);this._loading--}_clearUpdateEventsTimeouts(){this._updateEventsTimeouts.forEach(e=>{clearTimeout(e)})}_isFilterEvent(e,t){return this._filter&&e.summary.match(this._filter)||t&&e.summary.match(t)}_addEvent(e,t,n,i,r){if(this._hideWeekend&&t.weekday>=6)return;let a=t.toISODate();this._events.hasOwnProperty(a)||(this._events[a]=[]);let s=this._filterEventSummary(e,r),o=t.toISO()+"-"+n.toISO()+"-"+s;this._combineSimilarEvents||(o=t.toISO()+"-"+n.toISO()+"-"+s+"-"+r.entity),this._calendarEvents.hasOwnProperty(o)?(this._calendarEvents[o].calendars.push(r.entity),this._calendarEvents[o].colors.push(r.color??"inherit"),r.name&&-1===this._calendarEvents[o].calendarNames.indexOf(r.name)&&this._calendarEvents[o].calendarNames.push(r.name),r.sorting<this._calendarEvents[o].calendarSorting&&(this._calendarEvents[o].calendarSorting=r.sorting)):(this._calendarEvents[o]={uid:e.uid??e.id??e.event_id??e.uid??null,summary:s,description:e.description??null,location:e.location??null,start:t,originalStart:this._convertApiDate(e.start),end:n,originalEnd:this._convertApiDate(e.end),fullDay:i,colors:[r.color??"inherit"],icon:r.icon??null,calendars:[r.entity],calendarSorting:r.sorting,calendarNames:[r.name],class:this._getEventClass(t,n,i)},this._events[a].push(o))}_filterEventSummary(e,t){let n=t.eventTitleField?e[t.eventTitleField]:e.summary;if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_getEventClass(e,t,n){let i=[],r=eh.DateTime.now();return n&&i.push("fullday"),t<r?i.push("past"):e<=r&&t>r?i.push("ongoing"):i.push("future"),i.join(" ")}_getDayClass(e){let t=[];return this._isToday(e)?t.push("today"):this._isTomorrow(e)?(t.push("tomorrow"),t.push("future")):this._isYesterday(e)?(t.push("yesterday"),t.push("past")):e>eh.DateTime.now()?t.push("future"):t.push("past"),t.push(["sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][e.weekday]),t.join(" ")}_handleMultiDayEvent(e,t,n,i){for(;t<n;){let r=t,a=(t=t.plus({days:1}).startOf("day"))<n?t:n;this._addEvent(e,r,a,this._isFullDay(r,a),i)}}_updateCard(){this._error=this._calendarErrors.join("\n").trim();let e=[],t=this._weather?this.hass.states[this._weather.entity]:null,n={};this._weatherForecast?.forEach(e=>{if(e.hasOwnProperty("is_daytime")&&!1===e.is_daytime)return;let i=eh.DateTime.fromISO(e.datetime).toISODate(),r=this._weather.roundTemperature?Math.round(e.temperature):e.temperature,a=this._weather.roundTemperature?Math.round(e.templow):e.templow;n[i]={icon:this._getWeatherIcon(e),condition:this.hass.formatEntityState(t,e.condition),temperature:this.hass.formatEntityAttributeValue(t,"temperature",r),templow:this.hass.formatEntityAttributeValue(t,"templow",a)}});let i=this._startDate,r=this._startDate.plus({days:this._numberOfDays}),a=null,s=String(this._startingDay).toLowerCase().trim();if(this._numberOfDaysIsMonth&&["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].includes(s)){a=i.plus({days:7}).month;let e=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].indexOf(s)+1;i=this._getWeekDayDate(i,e);let t=this._startDate.endOf("month");for(r=i;r<=t;)r=r.plus({days:7})}let o=0;for(;i<r;){if(!this._hideWeekend||i.weekday<6){let t=[],r=null!==a&&i.month!==a,s=i.toISODate();if(this._events.hasOwnProperty(s)&&!r&&(o+=(t=this._events[s].sort((e,t)=>this._calendarEvents[e].start.toISO()===this._calendarEvents[t].start.toISO()?this._calendarEvents[e].calendarSorting<this._calendarEvents[t].calendarSorting?1:this._calendarEvents[e].calendarSorting>this._calendarEvents[t].calendarSorting?-1:0:this._calendarEvents[e].start>this._calendarEvents[t].start?1:-1)).length,this._maxEvents>0&&o>this._maxEvents&&t.splice(this._maxEvents-o)),e.push({date:i,events:t,weather:r?null:n[s]??null,class:this._getDayClass(i)+(r?" outside-month":""),isOutsideMonth:r}),this._maxEvents>0&&o>=this._maxEvents)break}i=i.plus({days:1})}this._days=e}_getWeekDayText(e){return this._language.today&&this._isToday(e)?this._language.today:this._language.tomorrow&&this._isTomorrow(e)?this._language.tomorrow:this._language.yesterday&&this._isYesterday(e)?this._language.yesterday:[this._language.sunday,this._language.monday,this._language.tuesday,this._language.wednesday,this._language.thursday,this._language.friday,this._language.saturday,this._language.sunday][e.weekday]}_handleContainerClick(e){if(!this._actions)return;let t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={config:this._actions,action:"tap"},this.dispatchEvent(t),e.stopImmediatePropagation()}_handleEventClick(e){this._actions||(this._currentEventDetails=e)}async _rnrDeleteCurrentEvent(){try{let e=this._currentEventDetails;if(!e||!this.hass)return;let t=e.summary||"this event";if(!confirm('Delete "'+t+'"?'))return;try{this._closeDialog()}catch(e){}let n=e.uid??e.id??e.event_id??null,i=e.originalStart?.toISO?.({suppressMilliseconds:!0})||e.start?.toISO?.({suppressMilliseconds:!0})||null,r=e.originalEnd?.toISO?.({suppressMilliseconds:!0})||e.end?.toISO?.({suppressMilliseconds:!0})||null;let a=e.calendars&&e.calendars.length?[...e.calendars]:[];0===a.length&&this._calendars&&this._calendars.length&&(a=this._calendars.map(e=>e.entity).filter(e=>!!e));0===a.length&&e.calendar&&(a=[e.calendar]);let s=0;for(let t of a){let a=!1;if(n)try{await this.hass.callService("calendar","event/delete",{entity_id:t,event_id:n}),a=!0}catch(e){try{await this.hass.callService("calendar","event/delete",{entity_id:t,uid:n}),a=!0}catch(e){}}if(!a&&n)try{await this.hass.callService("calendar","delete_event",{entity_id:t,event_id:n}),a=!0}catch(e){try{await this.hass.callService("calendar","delete_event",{entity_id:t,uid:n}),a=!0}catch(e){}}if(!a&&n)try{await this.hass.callService("calendar","remove_event",{entity_id:t,event_id:n}),a=!0}catch(e){try{await this.hass.callService("calendar","remove_event",{entity_id:t,uid:n}),a=!0}catch(e){}}if(!a)try{await this.hass.callService("ics_calendar_tools","delete_event",{calendar:t,uid:n,summary:e.summary??null,start:i,end:r,location:e.location??null,description:e.description??null}),a=!0}catch(e){}a&&s++}0===s&&alert("Delete failed (no matching service accepted the request). Check Home Assistant logs.");this._updateEvents()}catch(e){console.error(e),alert("Delete failed. Check Home Assistant logs.")}}_rnrOpenEditDialog(){
+        `}_getLoader(){let e=document.createElement("div");return e.className="loader",e.style.display="none",e}_updateLoader(){this._loading>0?this._loader.style.display="inherit":this._loader.style.display="none"}_getWeatherIcon(e){let t=e?.condition;return t?rf[t.toLowerCase()]:null}_waitForHassAndConfig(){this.hass&&this._calendars?this._updateEvents():window.setTimeout(()=>{this._waitForHassAndConfig()},50)}_subscribeToWeatherForecast(){this._loading++,this._updateLoader();let e=!0;this.hass.connection.subscribeMessage(t=>{this._weatherForecast=t.forecast??[],e&&(this._loading--,e=!1)},{type:"weather/subscribe_forecast",forecast_type:this._weather.useTwiceDaily?"twice_daily":"daily",entity_id:this._weather.entity})}_updateEvents(){if(this._loading>0)return;this._loading++,this._updateLoader(),this._clearUpdateEventsTimeouts(),this._events={},this._calendarEvents={},this._startDate=this._getStartDate(),this._numberOfDaysIsMonth&&(this._numberOfDays=this._startDate.daysInMonth);let e=this._startDate,t=this._startDate.plus({days:this._numberOfDays}),n=eh.DateTime.now(),i=this._startDate.toISO();this._weather&&null===this._weatherForecast&&this._subscribeToWeatherForecast();let r=0;this._calendars.forEach(a=>{if(!a.entity||!this.hass.states[a.entity])return;a.name||(a={...a,name:this.hass.formatEntityAttributeValue(this.hass.states[a.entity],"friendly_name")}),a.sorting||(a={...a,sorting:r});let s=r;this._loading++,this.hass.callApi("get","calendars/"+a.entity+"?start="+encodeURIComponent(e.toISO())+"&end="+encodeURIComponent(t.toISO())).then(e=>{this._startDate.toISO()!==i||(this._calendarErrors[s]="",e.forEach(e=>{if(this._isFilterEvent(e,a.filter??""))return;let t=this._convertApiDate(e.start),i=this._convertApiDate(e.end);if(this._hidePastEvents&&i<n)return;let r=this._isFullDay(t,i);r||this._isSameDay(t,i)?this._addEvent(e,t,i,r,a):this._handleMultiDayEvent(e,t,i,a)})),this._loading--}).catch(e=>{this._calendarErrors[s]='Error while fetching calendar "'+a.entity+'": '+(e.error??"Unknown error"),this._loading--}),r++});let a=window.setInterval(()=>{0===this._loading&&(clearInterval(a),this._updateCard(),this._updateLoader(),this._updateEventsTimeouts.push(window.setTimeout(()=>{this._updateEvents()},1e3*this._updateInterval)))},50);this._loading--}_clearUpdateEventsTimeouts(){this._updateEventsTimeouts.forEach(e=>{clearTimeout(e)})}_isFilterEvent(e,t){return this._filter&&e.summary.match(this._filter)||t&&e.summary.match(t)}_addEvent(e,t,n,i,r){if(this._hideWeekend&&t.weekday>=6)return;let a=t.toISODate();this._events.hasOwnProperty(a)||(this._events[a]=[]);let s=this._filterEventSummary(e,r),o=t.toISO()+"-"+n.toISO()+"-"+s;this._combineSimilarEvents||(o=t.toISO()+"-"+n.toISO()+"-"+s+"-"+r.entity),this._calendarEvents.hasOwnProperty(o)?(this._calendarEvents[o].calendars.push(r.entity),this._calendarEvents[o].colors.push(r.color??"inherit"),r.name&&-1===this._calendarEvents[o].calendarNames.indexOf(r.name)&&this._calendarEvents[o].calendarNames.push(r.name),r.sorting<this._calendarEvents[o].calendarSorting&&(this._calendarEvents[o].calendarSorting=r.sorting)):(this._calendarEvents[o]={uid:e.uid??e.id??e.event_id??e.uid??null,summary:s,description:e.description??null,location:e.location??null,start:t,originalStart:this._convertApiDate(e.start),end:n,originalEnd:this._convertApiDate(e.end),fullDay:i,colors:[r.color??"inherit"],icon:r.icon??null,calendars:[r.entity],calendarSorting:r.sorting,calendarNames:[r.name],class:this._getEventClass(t,n,i)},this._events[a].push(o))}_filterEventSummary(e,t){let n=t.eventTitleField?e[t.eventTitleField]:e.summary;if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_getEventClass(e,t,n){let i=[],r=eh.DateTime.now();return n&&i.push("fullday"),t<r?i.push("past"):e<=r&&t>r?i.push("ongoing"):i.push("future"),i.join(" ")}_getDayClass(e){let t=[];return this._isToday(e)?t.push("today"):this._isTomorrow(e)?(t.push("tomorrow"),t.push("future")):this._isYesterday(e)?(t.push("yesterday"),t.push("past")):e>eh.DateTime.now()?t.push("future"):t.push("past"),t.push(["sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][e.weekday]),t.join(" ")}_handleMultiDayEvent(e,t,n,i){for(;t<n;){let r=t,a=(t=t.plus({days:1}).startOf("day"))<n?t:n;this._addEvent(e,r,a,this._isFullDay(r,a),i)}}_updateCard(){this._error=this._calendarErrors.join("\n").trim();let e=[],t=this._weather?this.hass.states[this._weather.entity]:null,n={};this._weatherForecast?.forEach(e=>{if(e.hasOwnProperty("is_daytime")&&!1===e.is_daytime)return;let i=eh.DateTime.fromISO(e.datetime).toISODate(),r=this._weather.roundTemperature?Math.round(e.temperature):e.temperature,a=this._weather.roundTemperature?Math.round(e.templow):e.templow;n[i]={icon:this._getWeatherIcon(e),condition:this.hass.formatEntityState(t,e.condition),temperature:this.hass.formatEntityAttributeValue(t,"temperature",r),templow:this.hass.formatEntityAttributeValue(t,"templow",a)}});let i=this._startDate,r=this._startDate.plus({days:this._numberOfDays}),a=null,s=String(this._startingDay).toLowerCase().trim();if(this._numberOfDaysIsMonth&&["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].includes(s)){a=i.plus({days:7}).month;let e=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].indexOf(s)+1;i=this._getWeekDayDate(i,e);let t=this._startDate.endOf("month");for(r=i;r<=t;)r=r.plus({days:7})}let o=0;for(;i<r;){if(!this._hideWeekend||i.weekday<6){let t=[],r=null!==a&&i.month!==a,s=i.toISODate();if(this._events.hasOwnProperty(s)&&!r&&(o+=(t=this._events[s].sort((e,t)=>this._calendarEvents[e].start.toISO()===this._calendarEvents[t].start.toISO()?this._calendarEvents[e].calendarSorting<this._calendarEvents[t].calendarSorting?1:this._calendarEvents[e].calendarSorting>this._calendarEvents[t].calendarSorting?-1:0:this._calendarEvents[e].start>this._calendarEvents[t].start?1:-1)).length,this._maxEvents>0&&o>this._maxEvents&&t.splice(this._maxEvents-o)),e.push({date:i,events:t,weather:r?null:n[s]??null,class:this._getDayClass(i)+(r?" outside-month":""),isOutsideMonth:r}),this._maxEvents>0&&o>=this._maxEvents)break}i=i.plus({days:1})}this._days=e}_getWeekDayText(e){return this._language.today&&this._isToday(e)?this._language.today:this._language.tomorrow&&this._isTomorrow(e)?this._language.tomorrow:this._language.yesterday&&this._isYesterday(e)?this._language.yesterday:[this._language.sunday,this._language.monday,this._language.tuesday,this._language.wednesday,this._language.thursday,this._language.friday,this._language.saturday,this._language.sunday][e.weekday]}_handleContainerClick(e){if(!this._actions)return;let t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={config:this._actions,action:"tap"},this.dispatchEvent(t),e.stopImmediatePropagation()}_handleEventClick(e,ev){try{const ent=ev?.currentTarget?.dataset?.entity; if(ent){e._rnrClickedEntity=ent; this._rnrLastClickedEntity=ent;}}catch(x){} this._currentEventDetails=e}async _rnrDeleteCurrentEvent(){
+    try{
+        const e = this._currentEventDetails;
+        if(!e || !this.hass) return;
+
+        const title = e.summary || "this event";
+        if(!confirm('Delete "'+title+'"?')) return;
+
+        try{ this._closeDialog(); }catch(_e){}
+
+        const uid = e.uid ?? e.id ?? e.event_id ?? null;
+        const startIso = e.originalStart?.toISO?.({suppressMilliseconds:!0}) || e.start?.toISO?.({suppressMilliseconds:!0}) || null;
+        const endIso = e.originalEnd?.toISO?.({suppressMilliseconds:!0}) || e.end?.toISO?.({suppressMilliseconds:!0}) || null;
+
+
+        // Prefer native Calendar WS delete (this is what the HA Calendar UI uses; required for Google recurring series)
+        let wsDeleted = !1;
+        try{
+            const ent = e._rnrClickedEntity || this._rnrLastClickedEntity || e.calendar || (e.calendars && e.calendars[0]) || null;
+            if(ent && uid && this.hass.connection && this.hass.connection.sendMessagePromise){
+                const payload = {type:"calendar/event/delete",entity_id:ent,uid:uid};
+                const rid = e.recurrence_id ?? e.recurrenceId ?? e.recurrenceID ?? null;
+                if(rid) payload.recurrence_id = rid;
+                await this.hass.connection.sendMessagePromise(payload);
+                wsDeleted = !0;
+            }
+        }catch(_wsErr){ wsDeleted = !1; }
+        if(wsDeleted){ this._updateEvents(); return; }
+
+        // Choose calendars to try: prefer the calendar the user clicked, otherwise known calendars.
+        let cals = [];
+        if(e._rnrClickedEntity) cals.push(e._rnrClickedEntity);
+        if(e.calendar && !cals.includes(e.calendar)) cals.push(e.calendar);
+        if(e.calendars && e.calendars.length){
+            for(const c of e.calendars){ if(c && !cals.includes(c)) cals.push(c); }
+        }
+        if(cals.length===0 && this._calendars && this._calendars.length){
+            for(const c of this._calendars.map(x=>x.entity)){ if(c && !cals.includes(c)) cals.push(c); }
+        }
+
+        let ok = 0;
+        // IMPORTANT: Do NOT call any Home Assistant calendar.* delete services here.
+        // Many installs do not expose them (you've seen "Action calendar.* not found").
+        // We rely on ics_calendar_tools.delete_event, which is present and works for Local Calendar .ics.
+        for(const cal of cals){
+            let did = false;
+            try{
+                await this.hass.callService("ics_calendar_tools","delete_event",{
+                    calendar: cal,
+                    uid: uid,
+                    summary: e.summary ?? null,
+                    start: startIso,
+                    end: endIso,
+                    location: e.location ?? null,
+                    description: e.description ?? null
+                });
+                did = true;
+            }catch(_err){
+                // keep trying other calendars
+            }
+            if(did){ ok++; break; } // UID should be unique; stop after first success
+        }
+
+        if(ok===0){
+            alert("Delete failed. (ics_calendar_tools.delete_event did not accept the request) Check Home Assistant logs.");
+        }
+
+        this._updateEvents();
+    }catch(err){
+        console.error(err);
+        alert("Delete failed. Check Home Assistant logs.");
+    }
+} _rnrOpenEditDialog(){
     if(!this._currentEventDetails) return;
     const e=this._currentEventDetails;
     const oldStart=e.originalStart?.toISO?.({suppressMilliseconds:!0})||e.start?.toISO?.({suppressMilliseconds:!0})||null;
     const oldEnd=e.originalEnd?.toISO?.({suppressMilliseconds:!0})||e.end?.toISO?.({suppressMilliseconds:!0})||null;
-    let firstCal=(e.calendars&&e.calendars.length?e.calendars[0]:null);
+    let firstCal=(e._rnrClickedEntity||e.calendar||e.entity||(e.calendars&&e.calendars.length?e.calendars[0]:null));
     if(!firstCal && this._calendars&&this._calendars.length){ firstCal=this._calendars[0].entity; }
         const rruleRaw = e.rrule || e.recurrenceRule || e.recurrence_rule || (e.recurrence && (e.recurrence.rrule||e.recurrence.rule)) || null;
     const rruleParsed = this._rnrParseRRuleString(rruleRaw);
@@ -672,16 +745,20 @@ this._rnrEditDraft={
         location:e.location??"",
         description:e.description??""
     };
+    this._rnrEditMode="edit";
     this._rnrEditOpen=!0,this.requestUpdate();
 }
 _rnrCloseEditDialog(){
     this._rnrEditOpen=!1;
     this._rnrEditDraft=null;
+    this._rnrEditMode="edit";
     this.requestUpdate();
 }
 _rnrHandleDayClick(t,e){
   try{
-    if(!this._rnrTapEmptyDayToAdd) return;
+    const usePlus = !!this._rnrClickEmptyDayToAddPlus;
+    const useScript = !!this._rnrTapEmptyDayToAdd;
+    if(!usePlus && !useScript) return;
 
     // If the click started on an actual event chip (or its children), let the normal event-click behavior handle it.
     const path = t && t.composedPath ? t.composedPath() : [];
@@ -716,23 +793,114 @@ _rnrHandleDayClick(t,e){
       }
     }
 
-    this._rnrOpenAddEventForDate(dateStr);
-  }catch(err){}
+    if(usePlus){
+      this._rnrOpenAddPlusDialogForDate(dateStr);
+    }else{
+      this._rnrOpenAddEventForDate(dateStr);
+    }
+  }catch(err){try{console.warn('[week-planner-card-plus] _rnrHandleDayClick failed',err);}catch(e){} }
 }
 
   // Added: handler used by the "Add Event" button in the header
   // (older template calls this._rnrOpenAdd(day))
   _rnrOpenAdd(day) {
     try {
-      const dt = (day && (day.date || day.day || day.dt)) || null;
-      this._rnrOpenAddEventForDate(dt);
+      const usePlus = !!this._rnrClickEmptyDayToAddPlus;
+      const dt = (typeof day==='string'?day: (day && (day.date || day.day || day.dt))) || null;
+
+      // Prefer an ISO date string for the built-in add dialog
+      let dateStr = null;
+      if(dt && dt.toFormat) dateStr = dt.toFormat("yyyy-LL-dd");
+      else if(typeof dt === "string"){
+        const m = dt.match(/^(\d{4}-\d{2}-\d{2})/);
+        if(m) dateStr = m[1];
+      }
+
+      if(usePlus){
+        this._rnrOpenAddPlusDialogForDate(dateStr);
+      }else{
+        this._rnrOpenAddEventForDate(dt);
+      }
     } catch (err) {
       // Fallback: still open the add popup even if date extraction fails
-      try { this._rnrOpenAddEventForDate(null); } catch (e2) {}
+      try {
+        if(this._rnrClickEmptyDayToAddPlus) this._rnrOpenAddPlusDialogForDate(null);
+        else this._rnrOpenAddEventForDate(null);
+      } catch (e2) {}
       // eslint-disable-next-line no-console
       console.error("Week Planner Card Plus: Add button handler failed", err);
     }
   }
+
+
+_rnrOpenAddPlusDialogForDate(dateStr){
+    try{
+        // If the built-in dialog can't run, fall back to the old scripted add
+        if(!this.hass){
+            this._rnrOpenAddEventForDate(dateStr);
+            return;
+        }
+
+        // Normalize the date (yyyy-mm-dd)
+        let ds = dateStr;
+        if(typeof ds !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(ds)){
+            try{ ds = eh.DateTime.now().toFormat("yyyy-LL-dd"); }
+            catch(e){ ds = (new Date()).toISOString().slice(0,10); }
+        }
+
+        const start = `${ds}T00:00:00`;
+
+        let end = null;
+        try{
+            end = eh.DateTime.fromISO(ds).plus({days:1}).toISO({suppressMilliseconds:true, includeOffset:false});
+        }catch(e){
+            const d = new Date(ds + "T00:00:00");
+            d.setDate(d.getDate()+1);
+            end = d.toISOString().replace(".000Z","");
+        }
+
+        const calOpts = (this._calendars||[]).map(c=>c && c.entity).filter(Boolean);
+        const calNames = (this._calendars||[]).map(c=>c && (c.name||c.entity)).filter(Boolean);
+        const firstCal = calOpts.length ? calOpts[0] : null;
+
+        this._rnrEditMode = "add";
+        this._rnrEditDraft = {
+            uid: null,
+            calendar: firstCal,
+            old_calendar: firstCal,
+            calendars: calOpts,
+            calendarNames: calNames,
+
+            all_day: true,
+
+            old_summary: null,
+            old_start: null,
+            old_end: null,
+            old_location: null,
+            old_description: null,
+
+            summary: "",
+            start: start,
+            end: end,
+            location: "",
+            description: "",
+
+            // repeat defaults
+            repeat_freq: "none",
+            repeat_interval: 1,
+            repeat_byday: [],
+            repeat_end_type: "never",
+            repeat_until: "",
+            repeat_count: ""
+        };
+
+        this._rnrEditOpen = true;
+        this.requestUpdate();
+    }catch(err){
+        try{console.warn('[week-planner-card-plus] _rnrOpenAddPlusDialogForDate failed',err);}catch(e){}
+        try{ this._rnrOpenAddEventForDate(dateStr); }catch(e2){}
+    }
+}
 
 
 _rnrOpenAddEventForDate(dt){
@@ -872,6 +1040,16 @@ async _rnrSaveEdit(){
             description:d.description??null
         };
 
+        // Build RRULE from repeat UI (if enabled)
+        const rrule = (this._rnrBuildRRuleFromDraft ? this._rnrBuildRRuleFromDraft(d) : null);
+        if(rrule){
+            payload.rrule = (rrule && !String(rrule).toUpperCase().startsWith("RRULE:")) ? ("RRULE:"+rrule) : rrule;
+            payload.recurrence_rule = payload.rrule;
+        }else{
+            payload.rrule = null;
+            payload.recurrence_rule = null;
+        }
+
         // If we have a UID, do a true update.
         if(payload.uid){
             try{ await this.hass.callService("ics_calendar_tools","update_event",payload); }
@@ -896,32 +1074,147 @@ async _rnrSaveEdit(){
         // Fallback: delete+create using your integration (delete can often match by old fields).
         let did=false;
 
-        try{
-            await this.hass.callService("ics_calendar_tools","delete_event",{
-                calendar:payload.old_calendar||cal,
-                uid:null,
-                summary:payload.old_summary,
-                start:payload.old_start,
-                end:payload.old_end,
-                location:payload.old_location,
-                description:payload.old_description
-            });
-        }catch(e){}
+        const isAdd = (this._rnrEditMode==="add") || (!payload.old_summary && !payload.old_start);
+        if(!isAdd){
+            try{
+                await this.hass.callService("ics_calendar_tools","delete_event",{
+                    calendar:payload.old_calendar||cal,
+                    uid:null,
+                    summary:payload.old_summary,
+                    start:payload.old_start,
+                    end:payload.old_end,
+                    location:payload.old_location,
+                    description:payload.old_description
+                });
+            }catch(e){}
+        }
+
+        const allDay = !!d.all_day;
+        // For ics_calendar_tools.add_event:
+        // - all_day must be provided
+        // - all-day events require end to be *exclusive* (next day). If UI gives same-day end, fix it.
+        let startForIcs = payload.start;
+        let endForIcs = payload.end;
+        if(allDay){
+            const sd = (payload.start || "").slice(0,10);
+            let ed = (payload.end || "").slice(0,10) || sd;
+            if(ed === sd){
+                try{
+                    const dt = new Date(sd + "T00:00:00");
+                    dt.setDate(dt.getDate() + 1);
+                    ed = dt.toISOString().slice(0,10);
+                }catch(e){}
+            }
+            startForIcs = sd;
+            endForIcs = ed;
+        }
 
         const createPayload={
             calendar:cal,
             summary:payload.summary,
-            start:payload.start,
-            end:payload.end,
+            start:startForIcs,
+            end:endForIcs,
             location:payload.location,
-            description:payload.description
+            description:payload.description,
+            all_day:allDay,
+            // Integration accepts either "RRULE:..." or raw; we pass the full line if present
+            rrule: payload.rrule,
+            recurrence_rule: payload.recurrence_rule
         };
 
-        try{ await this.hass.callService("ics_calendar_tools","create_event",createPayload); did=true; }catch(e){}
+        // If a repeat rule is set, prefer the websocket calendar/event/create path first
+        // (this is what the native Calendar UI uses and it supports RRULE series creation)
+        if(!did && (payload.rrule||payload.recurrence_rule)){
+            try{
+                const rrRaw = ((payload.rrule||payload.recurrence_rule||"")+"").trim();
+                const rr = rrRaw.replace(/^RRULE:/i,"").trim();
+                const norm = (s)=>{
+                    if(!s) return s;
+                    let out = (s+"");
+                    out = out.replace(".000Z","").replace(/Z$/,"");
+                    return out;
+                };
+                if(this.hass?.connection?.sendMessagePromise && rr){
+                    const wsEvt = {
+                        summary: (payload.summary ?? "") || "",
+                        description: (payload.description ?? "") || "",
+                        location: (payload.location ?? "") || "",
+                        rrule: rr,
+                        dtstart: (allDay ? startForIcs : norm(payload.start)),
+                        dtend: (allDay ? endForIcs : norm(payload.end))
+                    };
+                    await this.hass.connection.sendMessagePromise({type:"calendar/event/create", entity_id: cal, event: wsEvt});
+                    did = true;
+                }
+            }catch(e){
+                try{ console.warn("[week-planner-card-plus] ws calendar/event/create failed", e); }catch(_){}
+            }
+        }
+
+        // Fallback: your ICS editor integration (needed for RRULE on local calendars)
+        if(!did && (payload.rrule||payload.recurrence_rule)){
+            try{
+                const svcs=this.hass?.services?.ics_calendar_tools||null;
+                if(svcs && svcs.add_event){ await this.hass.callService("ics_calendar_tools","add_event",createPayload); did=true; }
+            }catch(e){}
+        }
+
+
+        // Prefer core calendar.create_event when available (works for Google + Local calendars that support CREATE_EVENT)
+        if(!did){
+            try{
+                const allDay = !!d.all_day;
+                const svcData = {
+                    summary: (payload.summary ?? "") || "",
+                    location: (payload.location ?? "") || "",
+                    description: (payload.description ?? "") || ""
+                };
+
+                if(allDay){
+                    // calendar.create_event expects dates (end_date should be next day for a single all-day event)
+                    const sd = (payload.start || "").slice(0,10);
+                    const ed = (payload.end || "").slice(0,10) || sd;
+                    svcData.start_date = sd;
+                    svcData.end_date = ed;
+                }else{
+                    // calendar.create_event expects start/end date_time strings
+                    let st = payload.start;
+                    let en = payload.end;
+
+                    // Ensure end exists and is after start (HA errors if equal)
+                    try{
+                        const stDt = eh.DateTime.fromISO(st);
+                        let enDt = eh.DateTime.fromISO(en);
+                        if(!en || !enDt.isValid || (stDt.isValid && enDt <= stDt)){
+                            enDt = (stDt.isValid ? stDt.plus({minutes:1}) : eh.DateTime.now().plus({minutes:1}));
+                            en = enDt.toISO({suppressMilliseconds:true, includeOffset:false});
+                        }
+                    }catch(e){
+                        // last resort: add 60s
+                        if(typeof st === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(st)){
+                            const dd = new Date(st);
+                            dd.setMinutes(dd.getMinutes()+1);
+                            en = dd.toISOString().replace(".000Z","");
+                        }
+                    }
+
+                    svcData.start_date_time = st;
+                    svcData.end_date_time = en;
+                }
+
+                await this.hass.callService("calendar","create_event",{entity_id: cal, ...svcData});
+                did = true;
+            }catch(e){
+                try{ console.warn("[week-planner-card-plus] calendar.create_event failed", e); }catch(_){}
+            }
+        }
+
+        // Fallback: your ICS editor integration (needed for RRULE on local calendars)
+        if(!did){ try{ await this.hass.callService("ics_calendar_tools","create_event",createPayload); did=true; }catch(e){} }
         if(!did){ try{ await this.hass.callService("ics_calendar_tools","add_event",createPayload); did=true; }catch(e){} }
 
         if(!did){
-            alert("Edit failed because this event has no UID and your integration does not expose a create_event/add_event service. Check HA logs.");
+            alert("Add failed: this calendar did not accept calendar.create_event and ics_calendar_tools.add_event was not found. Check HA logs/services.");
             return;
         }
 
@@ -977,22 +1270,25 @@ _rnrRenderEditDialog(){
         label: (c.name??c.entity)
     }));
     const selectedCal = d.calendar || d.old_calendar || (calOptions.length?calOptions[0].value:null);
+    const _sel = selectedCal;
+    const selectedCalNorm = (calOptions.some(o=>o.value===_sel) ? _sel : (this._calendars||[]).find(c=>(c.name||c.entity)===_sel)?.entity) || (calOptions.length?calOptions[0].value:null);
+
 
     return W`
         <ha-dialog class="rnr-edit-dialog"
             open
             @closed="${this._rnrCloseEditDialog}"
-            .heading="${W`<div class="header_title"><span>Edit Event</span></div>`}"
+            .heading="${W`<div class="header_title"><span>${this._rnrEditMode==="add" ? "Add Event" : "Edit Event"}</span></div>`}"
         >
             <div class="content rnr-edit-form">
                 <div class="rnr-edit-row">
                     <label class="rnr-edit-label">Calendar</label>
                     <select class="rnr-edit-select"
                         @change="${(e)=>this._rnrEditSetField("calendar",e.target.value)}"
-                        .value="${selectedCal??""}"
+                        .value="${selectedCalNorm??""}"
                         style="width:100%;padding:10px;border:1px solid var(--divider-color);border-radius:8px;background:var(--card-background-color);color:var(--primary-text-color);"
                     >
-                        ${calOptions.map(o=>W`<option value="${o.value}">${o.label}</option>`)}
+                        ${calOptions.map(o=>W`<option value="${o.value}" ?selected=${o.value===selectedCalNorm}>${o.label}</option>`)}
                     </select>
                 </div>
 
@@ -1275,6 +1571,8 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
                     `)}
                 ${this.addExpansionPanel("Miscellaneous",W`
                         ${this.addTextField("updateInterval","Override update interval","number")}
+                        ${this.addBooleanField("tapEmptyDayToAdd","Tap empty day: open HA add event (hash)",!1)}
+                        ${this.addBooleanField("clickEmptyDayToAddPlus","Tap empty day: open built-in Add dialog (Plus)",!1)}
                     `)}
             </div>
         `:W``}addTextField(e,t,n,i){return W`
