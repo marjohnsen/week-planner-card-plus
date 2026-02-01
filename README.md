@@ -43,6 +43,7 @@ Week Planner Card Plus works with **Home Assistant calendar entities** (`calenda
 ---
 
 <img width="1903" height="961" alt="image" src="https://github.com/user-attachments/assets/beef1e76-9105-4a71-8ef1-2d6ef66e6c6a" />
+<img width="1914" height="963" alt="image" src="https://github.com/user-attachments/assets/cf921957-3e9f-4736-ad09-dd473233b4a7" />
 
 ---
 
