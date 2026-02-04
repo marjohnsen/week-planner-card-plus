@@ -654,6 +654,15 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
         const endIso = e.originalEnd?.toISO?.({suppressMilliseconds:!0}) || e.end?.toISO?.({suppressMilliseconds:!0}) || null;
 
 
+        // CalDAV (and some other providers) may not expose UID through HA's event list.
+        // Without a UID, Home Assistant cannot delete the event via WebSocket, and it is NOT a Local .ics file
+        // (so ics_calendar_tools cannot be used). Show a clear warning instead of a misleading error.
+        if(!uid){
+            alert("This calendar does not expose an event UID (common with CalDAV). Home Assistant cannot delete this event from the dashboard.");
+            return;
+        }
+
+
         // Prefer native Calendar WS delete (this is what the HA Calendar UI uses; required for Google recurring series)
         let wsDeleted = !1;
         try{
@@ -711,13 +720,60 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
         console.error(err);
         alert("Delete failed. Check Home Assistant logs.");
     }
-} _rnrOpenEditDialog(){
+}
+
+// --- R&R patch: determine integration platform (google/local_calendar/caldav/etc) via entity registry ---
+async _rnrGetEntityPlatform(entityId){
+    try{
+        if(!entityId || !this.hass || !this.hass.callWS) return null;
+        if(!this._rnrEntityPlatformCache) this._rnrEntityPlatformCache = new Map();
+        if(this._rnrEntityPlatformCache.has(entityId)) return this._rnrEntityPlatformCache.get(entityId);
+        const p = await this.hass.callWS({ type: "config/entity_registry/get", entity_id: entityId });
+        const platform = (p && (p.platform || p.config_entry_id || p.integration)) ? (p.platform || null) : null;
+        this._rnrEntityPlatformCache.set(entityId, platform);
+        return platform;
+    }catch(_e){
+        return null;
+    }
+}
+
+_rnrMaybeWarnGoogleEdit(entityId){
+    try{
+        if(!entityId) return;
+        // Fire-and-forget: don't block opening the edit dialog.
+        (async ()=>{
+            const platform = await this._rnrGetEntityPlatform(entityId);
+            // Never warn for local calendars
+            if(platform === "local_calendar") return;
+            // Only warn for google calendars
+            if(platform !== "google") return;
+            if(!this._rnrWarnedGoogleEdit) this._rnrWarnedGoogleEdit = new Set();
+            if(this._rnrWarnedGoogleEdit.has(entityId)) return;
+            this._rnrWarnedGoogleEdit.add(entityId);
+            alert("Note: Google calendars can usually be deleted, but Home Assistant may not support editing them from the dashboard. If editing fails, use your calendar app directly.");
+        })();
+    }catch(_e){}
+}
+
+_rnrOpenEditDialog(){
     if(!this._currentEventDetails) return;
     const e=this._currentEventDetails;
     const oldStart=e.originalStart?.toISO?.({suppressMilliseconds:!0})||e.start?.toISO?.({suppressMilliseconds:!0})||null;
     const oldEnd=e.originalEnd?.toISO?.({suppressMilliseconds:!0})||e.end?.toISO?.({suppressMilliseconds:!0})||null;
     let firstCal=(e._rnrClickedEntity||e.calendar||e.entity||(e.calendars&&e.calendars.length?e.calendars[0]:null));
     if(!firstCal && this._calendars&&this._calendars.length){ firstCal=this._calendars[0].entity; }
+
+    // CalDAV events commonly come through HA with uid=null. Without a UID, HA cannot update/edit the event.
+    const uidNow = e.uid ?? e.id ?? e.event_id ?? null;
+    if(!uidNow){
+        alert("This calendar does not expose an event UID (common with CalDAV). Home Assistant cannot edit this event from the dashboard.");
+        return;
+    }
+
+    // Optional warning: Google calendars are often deletable but may not be editable from HA dashboards.
+    // IMPORTANT: Do NOT warn for Local (.ics) calendars.
+    // Use entity-registry platform to avoid brittle heuristics.
+    if(firstCal){ this._rnrMaybeWarnGoogleEdit(firstCal); }
         const rruleRaw = e.rrule || e.recurrenceRule || e.recurrence_rule || (e.recurrence && (e.recurrence.rrule||e.recurrence.rule)) || null;
     const rruleParsed = this._rnrParseRRuleString(rruleRaw);
 this._rnrEditDraft={
@@ -1111,7 +1167,7 @@ async _rnrSaveEdit(){
 
         // If we have a UID, do a true update.
         if(payload.uid){
-            try{ await this.hass.callService("ics_calendar_tools","update_event",payload); }
+            try{ await this.hass.callService("ics_calendar_tools","update_event",payload); try{ if(!this._rnrIcsEditableEntities) this._rnrIcsEditableEntities=new Set(); if(cal) this._rnrIcsEditableEntities.add(cal); }catch(_e){} }
             catch(e){
                 try{ await this.hass.callService("ics_calendar_tools","edit_event",payload); }
                 catch(e2){
