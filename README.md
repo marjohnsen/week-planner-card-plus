@@ -1,4 +1,4 @@
-# Week Planner Card Plus 
+# Week Planner Card Plus
 
 **Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
 This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.
@@ -20,6 +20,7 @@ For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicel
 - ✅ Fixes for **hash / popup routing** used in our Skylight-style dashboard
 - ✅ **Empty-day + empty-space click-to-add** (optional, built-in dialog)
 - ✅ **Edit remembers calendar** (Edit dialog preselects the clicked event’s calendar)
+- ✅ **Schedule view (Skylight timeline)** + recommended CSS for all-day wrapping
 - ✅ Optional pairing with **ICS Calendar Tools** so edits/deletes persist to **Local Calendar (.ics)**  
   https://github.com/randrcomputers/ics-calendar-tools
 
@@ -47,6 +48,7 @@ Week Planner Card Plus works with **Home Assistant calendar entities** (`calenda
 
 <img width="1903" height="961" alt="image" src="https://github.com/user-attachments/assets/beef1e76-9105-4a71-8ef1-2d6ef66e6c6a" />
 <img width="1914" height="963" alt="image" src="https://github.com/user-attachments/assets/cf921957-3e9f-4736-ad09-dd473233b4a7" />
+<img width="1907" height="1071" alt="image" src="https://github.com/user-attachments/assets/758644fa-1e02-468d-a77a-455502439e10" />
 
 ---
 
@@ -122,6 +124,58 @@ calendars:
 ```
 
 > Tip: Use **only one** add mode. Set **either** `tapEmptyDayToAdd` **or** `clickEmptyDayToAddPlus` to `true` — not both.
+
+---
+
+## Schedule View (Skylight)
+
+Week Planner Card Plus includes a **Schedule** view intended to feel like a Skylight-style weekly timeline.
+
+### Notes / Known quirks
+- All-day events are rendered as **pills** at the top of each day column.
+- Timed events render inside the hour grid.
+- If your dashboard uses narrow columns (or long descriptions), all-day pills may visually **bleed into the next day** unless wrapping is forced via CSS.
+
+### Recommended card_mod CSS for Schedule View
+
+✅ **ADD THIS: All-day pills wrap inside the day column (no bleed to next day)**
+
+```yaml
+card_mod:
+  style: |
+    /* ✅ ADD THIS: All-day pills wrap inside the day column (no bleed to next day) */
+    .timelineAllDayPill,
+    .timelineAllDayPill * {
+      white-space: normal !important;
+      overflow-wrap: anywhere !important;
+      word-break: break-word !important;
+    }
+```
+
+### Optional: force schedule text to black (Skylight readability)
+
+If your schedule pills show white text and you want consistent dark text:
+
+```yaml
+card_mod:
+  style: |
+    /* Schedule view: force black text on all-day + timed pills */
+    .timelineAllDayPill,
+    .timelineAllDayPill * {
+      color: #111 !important;
+    }
+
+    .timelineEvent,
+    .timelineEvent * {
+      color: #111 !important;
+    }
+
+    /* Slightly dimmer time text */
+    .timelineEvent .time,
+    .timelineAllDayPill .time {
+      color: rgba(0,0,0,0.70) !important;
+    }
+```
 
 ---
 
