@@ -848,16 +848,51 @@ _rnrOpenAddPlusDialogForDate(dateStr){
             catch(e){ ds = (new Date()).toISOString().slice(0,10); }
         }
 
-        const start = `${ds}T00:00:00`;
+	        // Default new events to *timed* (not all-day).
+	        // - If adding on *today*, start at the next 30-minute boundary (e.g. 5:04 -> 5:30).
+	        // - If adding on any other day, start at 09:00.
+	        let start = `${ds}T09:00:00`;
+	        try{
+	            const now = eh.DateTime.now();
+	            const target = eh.DateTime.fromFormat(ds, "yyyy-LL-dd");
+	            if(target.isValid && target.hasSame(now, "day")){
+	                const add = (30 - (now.minute % 30)) % 30;
+	                const rounded = now.plus({minutes:add}).set({second:0, millisecond:0});
+	                start = rounded.toISO({suppressMilliseconds:true, includeOffset:false});
+	            }
+	        }catch(e){
+	            // Luxon not available for some reason – use native Date in local time.
+	            	            const now = new Date();
+	            now.setSeconds(0,0);
+	            const mins = now.getMinutes();
+	            const rounded = Math.ceil(mins/30)*30;
+	            if (rounded === 60) { now.setHours(now.getHours()+1); now.setMinutes(0); }
+	            else { now.setMinutes(rounded); }
+	            const hh = String(now.getHours()).padStart(2,'0');
+	            const mm = String(now.getMinutes()).padStart(2,'0');
+	            start = `${ds}T${hh}:${mm}:00`;
 
-        let end = null;
-        try{
-            end = eh.DateTime.fromISO(ds).plus({days:1}).toISO({suppressMilliseconds:true, includeOffset:false});
-        }catch(e){
-            const d = new Date(ds + "T00:00:00");
-            d.setDate(d.getDate()+1);
-            end = d.toISOString().replace(".000Z","");
-        }
+	        }
+
+	        // 30-minute default duration
+	        let end = null;
+	        try{
+	            end = eh.DateTime.fromISO(start).plus({minutes:30}).toISO({suppressMilliseconds:true, includeOffset:false});
+	        }catch(e){
+	            const d = new Date(start);
+	            if(!isNaN(d.getTime())){
+	                d.setMinutes(d.getMinutes()+30);
+	                // Local ISO without Z
+	                const yyyy = ds;
+	                const hh = String(d.getHours()).padStart(2,'0');
+	                const mm = String(d.getMinutes()).padStart(2,'0');
+	                end = `${yyyy}T${hh}:${mm}:00`;
+	            }else{
+	                const d2 = new Date(ds + "T09:00:00");
+	                d2.setMinutes(d2.getMinutes()+30);
+	                end = _rnrLocalISO(d2);
+	            }
+	        }
 
         const calOpts = (this._calendars||[]).map(c=>c && c.entity).filter(Boolean);
         const calNames = (this._calendars||[]).map(c=>c && (c.name||c.entity)).filter(Boolean);
@@ -871,7 +906,7 @@ _rnrOpenAddPlusDialogForDate(dateStr){
             calendars: calOpts,
             calendarNames: calNames,
 
-            all_day: true,
+            all_day: false,
 
             old_summary: null,
             old_start: null,
@@ -902,6 +937,30 @@ _rnrOpenAddPlusDialogForDate(dateStr){
     }
 }
 
+
+
+_rnrHandleTimelineGridClick(ev,dayLayouts,labelW){
+try{
+if(!this._rnrClickEmptyDayToAddPlus&&!this._rnrTapEmptyDayToAdd)return;
+const path=ev&&typeof ev.composedPath==="function"?ev.composedPath():[];
+for(const n of path){if(n&&n.classList&&(n.classList.contains("timelineEvent")||n.classList.contains("timelineAllDayPill")||n.classList.contains("event")))return;}
+const grid=ev&&ev.currentTarget?ev.currentTarget:null;
+if(!grid||!grid.getBoundingClientRect)return;
+const r=grid.getBoundingClientRect();
+const x=(ev.clientX??0)-r.left;
+if(x<(labelW||0)+2)return;
+const dc=dayLayouts&&dayLayouts.length?dayLayouts.length:0;
+if(!dc)return;
+const colW=(r.width-(labelW||0))/dc;
+if(!(colW>0))return;
+const idx=Math.max(0,Math.min(dc-1,Math.floor((x-(labelW||0))/colW)));
+const d=dayLayouts[idx]&&dayLayouts[idx].day&&dayLayouts[idx].day.date?dayLayouts[idx].day.date:null;
+let ds=null;try{ds=d&&d.toFormat?d.toFormat("yyyy-LL-dd"):null}catch(e){}
+if(!ds){try{ds=eh.DateTime.now().toFormat("yyyy-LL-dd")}catch(e){ds=(new Date).toISOString().slice(0,10)}}
+if(this._rnrClickEmptyDayToAddPlus)this._rnrOpenAddPlusDialogForDate(ds);
+else if(this._rnrTapEmptyDayToAdd)this._rnrOpenAddEventForDate(ds);
+}catch(err){try{console.warn("[week-planner-card-plus] timeline grid click failed",err)}catch(e){}}
+}
 
 _rnrOpenAddEventForDate(dt){
     try{
@@ -1646,3 +1705,327 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
             </ha-button>
         `}_valueChanged(e){let t=e.target,n=e.detail?e.detail.value??t.value??"":t.value??"";"HA-SWITCH"===t.tagName&&(n=t.checked),this.setConfigValue(t.attributes.name.value,n)}getConfigValue(e,t){return this._config?(t=t??"",e.split(".").reduce((e,n)=>e[n]??t,this._config)??t):""}setConfigValue(e,t){let n=JSON.parse(JSON.stringify(this._config)),i=e.split("."),r=i.pop(),a=i.reduce((e,t)=>(e[t]||(e[t]={}),e[t]),n);""===t?delete a[r]:a[r]=t,this._config=n,this.dispatchConfigChangedEvent()}dispatchConfigChangedEvent(){let e=new CustomEvent("config-changed",{detail:{config:this._config},bubbles:!0,composed:!0});this.dispatchEvent(e)}}),console.info(`%c WEEK-PLANNER-CARD %c v${ry.version} `,"color: white; background: black; font-weight: 700;","color: black; background: white; font-weight: 700;");
 //# sourceMappingURL=week-planner-card.js.map
+
+;(()=>{try{
+  const Card=customElements.get("week-planner-card-plus");
+  if(!Card||Card.__rnrSkylightOptionD) return;
+  Card.__rnrSkylightOptionD=true;
+
+  const _origSetConfig=Card.prototype.setConfig;
+  Card.prototype.setConfig=function(cfg){
+    _origSetConfig.call(this,cfg);
+    const _vmRaw=(cfg&&cfg.viewMode!=null)?String(cfg.viewMode):"grid";
+    const _vmKey=_vmRaw.trim().toLowerCase();
+    const _vmMap={
+      "grid":"grid",
+      "schedule":"schedule",
+      "skylightschedule":"skylightSchedule",
+      "timelineday":"timelineDay",
+      "timelineweek":"timelineWeek",
+      "timegriday":"timelineDay",
+      "timegridweek":"timelineWeek",
+      "timeline_day":"timelineDay",
+      "timeline_week":"timelineWeek"
+    };
+    this._rnrViewMode=_vmMap[_vmKey]??_vmRaw;
+    const cf=(cfg&&(cfg.clockFormat!=null?cfg.clockFormat:cfg.clock))??"24";
+    this._rnrClockFormat=String(cf);
+    // If user didn't explicitly set timeFormat, pick one from clockFormat
+    if(cfg && cfg.timeFormat==null){
+      this._timeFormat=(this._rnrClockFormat==="12"||this._rnrClockFormat==="12h")?"h:mm a":"HH:mm";
+    }
+  };
+
+  const _origRenderDays=Card.prototype._renderDays;
+  Card.prototype._renderDays=function(){
+    const m=this._rnrViewMode;
+    if(m==="timelineDay"||m==="timelineWeek"||m==="timeline"||m==="skylight_tl"){
+      return this._rnrRenderTimelineDays?.() ?? _origRenderDays.call(this);
+    }
+    if(m==="optionD"||m==="schedule"||m==="skylight_d"){
+      return this._rnrRenderScheduleDays?.() ?? _origRenderDays.call(this);
+    }
+    return _origRenderDays.call(this);
+  };
+
+  Card.prototype._rnrGetRenderableEventsForDay=function(day){
+    const out=[];
+    if(!day||!day.events||!this._calendarEvents) return out;
+    day.events.forEach((id)=>{
+      const ce=this._calendarEvents[id];
+      if(!ce) return;
+      const n=Object.assign({},ce);
+      const cals=[...(n.calendars||[])];
+      const cols=[...(n.colors||[])];
+      let a=0;
+      while(a<cals.length){
+        if(this._hideCalendars && this._hideCalendars.indexOf(cals[a])>-1){
+          cals.splice(a,1); cols.splice(a,1);
+        }else a++;
+      }
+      if(cals.length===0) return;
+      n.calendars=cals; n.colors=cols;
+      out.push(n);
+    });
+    out.sort((a,b)=>{
+      const sa=a.start? a.start.toMillis() : 0;
+      const sb=b.start? b.start.toMillis() : 0;
+      return sa-sb;
+    });
+    return out;
+  };
+
+  Card.prototype._rnrRenderScheduleDays=function(){
+    if(!this._days) return W``;
+
+    const style=W`<style>
+      .day.schedule .events{padding:6px 6px 10px 6px;}
+      .day.schedule .scheduleRow{display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-top:1px solid rgba(0,0,0,0.08);}
+      .day.schedule .scheduleRow:first-child{border-top:0;}
+      .day.schedule .scheduleTime{flex:0 0 110px; font-size:.9em; opacity:.9; line-height:1.2;}
+      .day.schedule .scheduleBody{flex:1; min-width:0;}
+      .day.schedule .scheduleTitle{font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+      .day.schedule .scheduleMeta{font-size:.85em; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
+      .day.schedule .scheduleDot{width:10px; height:10px; border-radius:50%; margin-top:4px; background:var(--border-color);}
+      .day.schedule .scheduleLeft{display:flex; align-items:flex-start; gap:10px;}
+      .day.schedule .eventRow{cursor:pointer;}
+    </style>`;
+
+    return W`
+      ${style}
+      ${this._days.map(d=>d.isOutsideMonth?W`<div class="day ${d.class}"></div>`:
+        (this._hideDaysWithoutEvents&&d.events.length===0&&(this._hideTodayWithoutEvents||!this._isToday(d.date))?W``:W`
+          <div class="day ${d.class} schedule"
+               @click="${t=>this._rnrHandleDayClick(t,d)}"
+               data-date="${d.date.day}" data-weekday="${d.date.weekday}"
+               data-month="${d.date.month}" data-year="${d.date.year}" data-week="${d.date.weekNumber}">
+            <div class="date">
+              ${this._dayFormat?ed(d.date.toFormat(this._dayFormat)):W`
+                <span class="number">${d.date.day}</span>
+                ${this._showWeekDayText||!this._numberOfDaysIsMonth&&this._numberOfDays<7?W`<span class="text">${this._getWeekDayText(d.date)}</span>`:""}
+              `}
+            </div>
+
+            ${d.weather?W`
+              <div class="weather" @click="${this._handleWeatherClick}">
+                ${this._weather?.showTemperature||this._weather?.showLowTemperature?W`
+                  <div class="temperature">
+                    ${this._weather?.showTemperature?W`<span class="high">${d.weather.temperature}</span>`:""}
+                    ${this._weather?.showLowTemperature?W`<span class="low">${d.weather.templow}</span>`:""}
+                  </div>
+                `:""}
+                ${this._weather?.showCondition?W`<div class="icon"><img src="${d.weather.icon}" alt="${d.weather.condition}"></div>`:""}
+              </div>
+            `:""}
+
+            <div class="events">
+              ${(()=>{
+                const evs=this._rnrGetRenderableEventsForDay(d.date||d);
+                if(!evs||evs.length===0) return this._renderNoEvents();
+                let rows=[...evs],limited=false;
+                if(this._maxDayEvents>0 && rows.length>this._maxDayEvents){ rows=rows.slice(0,this._maxDayEvents); limited=true; }
+                return W`
+                  ${rows.map(ev=>W`
+                    <div class="scheduleRow eventRow ${ev.class}" style="--border-color: ${ev.colors[0]}"
+                         @click="${(clickEv)=>{this._handleEventClick(ev,clickEv)}}">
+                      <div class="scheduleLeft">
+                        <div class="scheduleDot" style="--border-color:${ev.colors[0]}"></div>
+                        <div class="scheduleTime">
+                          ${ev.fullDay?W`${this._language.fullDay}`:W`${ev.start.toFormat(this._timeFormat)}${ev.end?" - "+ev.end.toFormat(this._timeFormat):""}`}
+                        </div>
+                      </div>
+                      <div class="scheduleBody">
+                        ${this._showTitle?W`<div class="scheduleTitle">${ev.summary}</div>`:""}
+                        ${this._showLocation && ev.location?W`<div class="scheduleMeta">${ev.location}</div>`:""}
+                      </div>
+                    </div>
+                  `)}
+                  ${limited?W`<div class="moreEvents">${this._language.moreEvents??"More events"}</div>`:""}
+                `;
+              })()}
+            </div>
+          </div>
+        `)
+      )}
+    `;
+  }
+
+  Card.prototype._rnrRenderTimelineDays=function(){
+    const days=this._days||[];
+    if(!days.length) return _origRenderDays.call(this);
+
+    // Hour row height (px). Default was 60; make it roomier for schedule view.
+// You can override via YAML: timelineHourHeight: 80  (or scheduleHourHeight)
+// Or via CSS: --wpcp-timeline-hour-height: 80px;
+let hourHeight = 96;
+try {
+  const cfg = (this && (this._config || this.config)) || {};
+  const cfgHH = cfg.timelineHourHeight ?? cfg.scheduleHourHeight ?? cfg.hourHeight;
+  if (cfgHH != null && cfgHH !== "") {
+    const n = Number(cfgHH);
+    if (Number.isFinite(n) && n > 20) hourHeight = n;
+  }
+  const cssHH = (getComputedStyle(this).getPropertyValue("--wpcp-timeline-hour-height") || "").trim();
+  if (cssHH) {
+    const n2 = parseFloat(cssHH);
+    if (Number.isFinite(n2) && n2 > 20) hourHeight = n2;
+  }
+} catch (e) {}
+const pxPerMin = hourHeight / 60;
+        // 1px per minute
+    const labelW=72;                     // left time gutter width
+    const dayCount=Math.max(1, days.length);
+
+    const use24=(this._rnrClockFormat==="24");
+
+    const fmtHour=(h)=>{
+      if(use24) return String(h).padStart(2,"0")+":00";
+      const ampm = h<12 ? "AM" : "PM";
+      let hh = h%12; if(hh===0) hh=12;
+      return hh+" "+ampm;
+    };
+
+    const fmtTime=(dt)=>{
+      if(!dt) return "";
+      try {
+        const fmt = (typeof this._timeFormat === "string" && this._timeFormat) ? this._timeFormat : (use24 ? "HH:mm" : "h:mm a");
+        return dt.toFormat ? dt.toFormat(fmt) : "";
+      } catch (e) {
+        try { return String(dt); } catch (_) { return ""; }
+      }
+    };
+
+    const style=W`<style>
+      .timelineWrap{display:flex;flex-direction:column;gap:8px;width:100%;min-width:0;}
+      .timelineHeader{display:grid;grid-template-columns:${labelW}px repeat(${dayCount},1fr);gap:8px;align-items:end;width:100%;min-width:0;}
+      .timelineHeaderDay{font-weight:700;font-size:0.95em;color:#333;line-height:1.1;padding:0 6px;}
+      .timelineHeaderDay .sub{font-weight:500;font-size:0.8em;opacity:.75;margin-top:2px;}
+      .timelineAllDayBar{display:grid;grid-template-columns:${labelW}px repeat(${dayCount},1fr);gap:8px;align-items:start;width:100%;min-width:0;}
+      .timelineAllDayLabel{padding-left:8px;font-size:0.95em;color:#666;padding-top:4px;}
+      .timelineAllDayCell{padding:0 6px 2px 6px;min-height:10px;}
+      .timelineAllDayPill{display:block;border-left:4px solid var(--border-color,#999);background:var(--border-color,#999);color:#fff;border-radius:999px;padding:4px 10px;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1em;cursor:pointer;pointer-events:auto;touch-action:manipulation;}
+      .timelineBody{position:relative;overflow:auto;flex:1 1 auto;min-height:0;height:100%;max-height:100%;border-radius:14px;background:rgba(255,255,255,0.35);width:100%;min-width:0;}
+      .timelineGrid{position:relative;height:${24*hourHeight}px;width:100%;min-width:0;}
+      .timelineGrid::before{content:"";position:absolute;left:${labelW}px;right:0;top:0;bottom:0;background:linear-gradient(to right, rgba(0,0,0,.06) 1px, transparent 1px);background-size:calc(100% / ${dayCount}) 100%;pointer-events:none;opacity:.6;}
+      .timelineHourRow{position:absolute;left:0;right:0;height:${hourHeight}px;border-top:1px solid rgba(0,0,0,0.08);pointer-events:none;z-index:1;}
+      .timelineHourLabel{position:absolute;left:0;top:-0.55em;width:${labelW}px;padding-left:8px;font-size:0.75em;color:#666;}
+      .timelineEvent{position:absolute;border-left:6px solid var(--border-color,#999);background:var(--border-color,#999);color:#fff;border-radius:12px;padding:8px 10px;overflow:hidden;box-shadow:0 2px 2px rgba(0,0,0,0.10);cursor:pointer;z-index:1;pointer-events:auto;touch-action:manipulation;}
+      .timelineEvent .time{font-size:0.9em;opacity:0.9;}
+      .timelineEvent .title{font-weight:600;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+      .timelineEvent .loc{font-size:0.75em;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}.timelineEvent .desc{font-size:0.78em;opacity:.85;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;word-break:break-word;overflow-wrap:anywhere;margin-top:2px;}
+
+    </style>`;
+
+    // Build per-day event layouts (timed only) + overlap columns
+    const dayLayouts = days.map((d)=>{
+      const dayStart=d.date.startOf("day");
+      const evs=this._rnrGetRenderableEventsForDay(d) || [];
+      const fullDay = evs.filter(e=>!!e.fullDay);
+      const timedRaw = evs.filter(e=>!e.fullDay);
+
+      const timed = timedRaw.map((e)=>{
+        const s=e.start || dayStart;
+        const en=e.end || s.plus({minutes:30});
+        let startMin = Math.floor(s.diff(dayStart,"minutes").minutes);
+        let endMin = Math.ceil(en.diff(dayStart,"minutes").minutes);
+        if(endMin<startMin) endMin=startMin+15;
+        startMin = Math.max(0, Math.min(24*60, startMin));
+        endMin = Math.max(0, Math.min(24*60, endMin));
+        if(endMin-startMin<15) endMin=Math.min(24*60, startMin+15);
+        return {e,startMin,endMin,col:0,colCount:1};
+      }).sort((a,b)=>a.startMin-b.startMin || (b.endMin-b.startMin)-(a.endMin-a.startMin));
+
+      let active=[];
+      let cluster=[];
+      let clusterMax=0;
+      const finalizeCluster=()=>{
+        if(!cluster.length) return;
+        cluster.forEach(x=>x.colCount=Math.max(1,clusterMax));
+        cluster=[];
+        clusterMax=0;
+      };
+
+      timed.forEach((item)=>{
+        active=active.filter(a=>a.endMin>item.startMin);
+        if(active.length===0) finalizeCluster();
+
+        const used=new Set(active.map(a=>a.col));
+        let col=0; while(used.has(col)) col++;
+        item.col=col;
+
+        active.push(item);
+        cluster.push(item);
+        clusterMax=Math.max(clusterMax, active.length, col+1);
+      });
+      finalizeCluster();
+
+      return {day:d, dayStart, fullDay, timed};
+    });
+
+    const colWExpr=(di)=>`calc(${labelW}px + (${di} * (100% - ${labelW}px) / ${dayCount}))`;
+    const baseWExpr=`calc((100% - ${labelW}px) / ${dayCount})`;
+
+    return W`
+      ${style}
+      <div class="timelineWrap">
+        <div class="timelineHeader">
+          <div></div>
+          ${dayLayouts.map((dl)=>{
+            const d=dl.day.date;
+            const title = (d.toFormat ? d.toFormat("cccc") : "") || "";
+            const sub = (d.toFormat ? d.toFormat("LLL d") : "") || "";
+            return W`<div class="timelineHeaderDay">${title}<div class="sub">${sub}</div></div>`;
+          })}
+        </div>
+
+        <div class="timelineAllDayBar" style="min-height:72px;">
+          <div class="timelineAllDayLabel">All day</div>
+          ${dayLayouts.map((dl)=>{
+            return W`<div class="timelineAllDayCell" style="min-height:72px;" @click=${(t)=>{if(this._rnrClickEmptyDayToAddPlus||this._rnrTapEmptyDayToAdd){let ds=null;try{ds=dl.day.date.toFormat("yyyy-LL-dd")}catch(e){};if(this._rnrClickEmptyDayToAddPlus)this._rnrOpenAddPlusDialogForDate(ds);else this._rnrOpenAddEventForDate(ds);}}}>
+              ${dl.fullDay.map((ev)=>{
+                return W`<div class="timelineAllDayPill" style="--border-color:${ev.colors?.[0]||'#999'}" @click=${(e)=>{e?.stopPropagation?.();e?.preventDefault?.();this._handleEventClick(ev.ce||ev,e);}}>
+                  ${ev.summary||"(no title)"}
+                </div>`;
+              })}
+            </div>`;
+          })}
+        </div>
+
+        <div class="timelineBody">
+          <div class="timelineGrid" @click=${(t)=>this._rnrHandleTimelineGridClick(t,dayLayouts,labelW)}>
+            ${Array.from({length:24}).map((_,h)=>{
+              return W`<div class="timelineHourRow" style="top:${h*hourHeight}px">
+                <div class="timelineHourLabel">${fmtHour(h)}</div>
+              </div>`;
+            })}
+
+            ${dayLayouts.map((dl,dayIndex)=>{
+              return dl.timed.map((it)=>{
+                const ev=it.e;
+                const topPx = it.startMin*pxPerMin;
+                const hPx = Math.max(18, (it.endMin-it.startMin)*pxPerMin);
+
+                const leftExpr = `calc(${colWExpr(dayIndex)} + (${it.col} * (${baseWExpr} / ${it.colCount})) + 6px)`;
+                const widthExpr = `calc((${baseWExpr} / ${it.colCount}) - 12px)`;
+
+                const timeLabel = `${fmtTime(ev.start)} - ${fmtTime(ev.end)}`;
+                const descRaw = (ev.description ?? ev.ce?.description ?? ev.extendedProps?.description ?? ev.ce?.extendedProps?.description ?? "").toString();
+                const desc = descRaw.trim();
+                return W`<div class="timelineEvent"
+                  style="top:${topPx}px; height:${hPx}px; left:${leftExpr}; width:${widthExpr}; --border-color:${ev.colors?.[0]||'#999'}"
+                  @click=${(e)=>{e.stopPropagation();this._handleEventClick(ev.ce||ev,e);}}>
+                    <div class="title">${ev.summary||"(no title)"}</div>
+                    ${desc ? W`<div class="desc">${desc}</div>` : ""}
+                    ${ev.location ? W`<div class="loc">${ev.location}</div>` : ""}
+                    <div class="time">${timeLabel}</div>
+                </div>`;
+              });
+            })}
+          </div>
+        </div>
+      </div>
+    `;
+  };
+;
+}catch(e){console.warn("week-planner-card-plus: OptionD patch failed",e);}})();
+
