@@ -129,12 +129,24 @@ calendars:
 
 ## Schedule View (Skylight)
 
-Week Planner Card Plus includes a **Schedule** view intended to feel like a Skylight-style weekly timeline.
+Week Planner Card Plus also includes a **Schedule** view intended to feel like a Skylight-style weekly timeline.
 
 ### Notes / Known quirks
 - All-day events are rendered as **pills** at the top of each day column.
 - Timed events render inside the hour grid.
 - If your dashboard uses narrow columns (or long descriptions), all-day pills may visually **bleed into the next day** unless wrapping is forced via CSS.
+
+### Required card_mod for Schedule View
+
+```yaml
+            card:
+              type: custom:week-planner-card-plus
+              viewMode: ${ VIEWMODE } # Needed for new scheduled view
+              tapEmptyDayToAdd: false
+              clickEmptyDayToAddPlus: true
+              calendars:
+                - entity: calendar.family_calendar
+```
 
 ### Recommended card_mod CSS for Schedule View
 
