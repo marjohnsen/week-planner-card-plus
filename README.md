@@ -31,6 +31,11 @@ For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicel
 Week Planner Card Plus works with **Home Assistant calendar entities** (`calendar.*`) from many sources.  
 **What you can do (Add/Edit/Delete/Repeat) depends on what your calendar integration supports.**
 
+Note certain calendars have limitations.
+CalDAV cannot edit or delete but can add events
+Google cannot edit but can add and delete events
+Local calendars can delete, add and edit with ics calendar tools addon.
+
 ### Cloud calendars (Google / CalDAV / etc.)
 - ✅ **View events** in the planner
 - ✅ **Add events** (built-in dialog)
