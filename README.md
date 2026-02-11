@@ -64,11 +64,11 @@ Local calendars you can delete, add and edit events with ics calendar tools addo
 ### HACS (Recommended)
 
 1. Make sure HACS is installed and working.
-2. Go to **HACS → Frontend**.
+2. HACS → ⋮ → Custom repositories
 3. Open the menu (top right) → **Custom repositories**.
 4. Add this repo URL:
    - `https://github.com/randrcomputers/week-planner-card-plus`
-5. Category: **Lovelace**
+5. Category: Dashboard
 6. Install **Week Planner Card Plus**.
 7. Restart Home Assistant (or reload resources if you prefer).
 
