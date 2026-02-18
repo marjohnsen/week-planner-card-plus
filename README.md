@@ -206,6 +206,13 @@ card_mod:
 ---
 
 ## Options
+### `defaultAllDay` (boolean)
+Default state of the **All day** toggle in the built-in Add/Edit dialog.
+
+- `true` = All day starts ON
+- `false` = All day starts OFF
+
+**Default:** `false`
 
 ### `clickEmptyDayToAddPlus` (boolean)
 When `true`, empty-day / empty-space clicks open the **built-in Add dialog** (recommended).
