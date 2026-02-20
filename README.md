@@ -1,5 +1,6 @@
 # Week Planner Card Plus
 
+v2.0.4 Added option for defaultAllDay: true|false
 v2.0.3 Added support for Dutch language
 
 **Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
