@@ -1,8 +1,6 @@
 # Week Planner Card Plus
 
-v2.0.4 Added option for defaultAllDay: true|false
-
-v2.0.3 Added support for Dutch language
+**Current release: v2.0.9**
 
 **Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
 This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.
@@ -25,8 +23,81 @@ For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicel
 - ✅ **Empty-day + empty-space click-to-add** (optional, built-in dialog)
 - ✅ **Edit remembers calendar** (Edit dialog preselects the clicked event’s calendar)
 - ✅ **Schedule view (Skylight timeline)** + recommended CSS for all-day wrapping
+- ✅ **Built-in Add/Edit dialog** with Title, Description, Location, and repeat (daily / weekly / **fortnightly** / monthly / yearly)
+- ✅ **Local Calendar (.ics)** title fallback when only Description is set in the file
+- ✅ Per-calendar **Display in day header** (e.g. holidays as pills under the day number)
 - ✅ Optional pairing with **ICS Calendar Tools** so edits/deletes persist to **Local Calendar (.ics)**  
   https://github.com/randrcomputers/ics-calendar-tools
+
+---
+
+## Recent updates (May 2026)
+
+Summary of fixes and features added in **v2.0.5 → v2.0.9**. After updating via HACS (or copying `week-planner-card-plus.js`), **hard-refresh** the dashboard (Ctrl+F5).
+
+### Add / Edit dialog fixes
+
+| Version | Change |
+|---------|--------|
+| **v2.0.5** | Title, Location, and Description fields no longer go blank while typing (fixed `ha-textfield` binding). HACS listing icon (`icon.png`). |
+| **v2.0.7** | Description no longer cleared when opening Edit (removed spurious `value-changed` on load). |
+| **v2.0.8** | **Description** is always visible: native `<textarea>` under **Title** (Home Assistant’s `ha-textarea` often does not render inside custom-card dialogs). Form scrolls when Repeat options are expanded. |
+
+**Recommended field usage**
+
+- **Title** — main label on the calendar grid (like Google Calendar event names).
+- **Description** — extra notes; optional. Saved to `.ics` via **ICS Calendar Tools** for local calendars.
+- **Location** — optional.
+
+### Local Calendar (.ics) — event text on the grid
+
+| Version | Change |
+|---------|--------|
+| **v2.0.6** | If a local event has **Description** but no **Title/SUMMARY** in the API, the card shows the first line of the description on the grid (blue/local events were showing time only). On save, if Title is empty but Description is filled, the first line is copied into **summary** for the `.ics` file. |
+
+### Repeat: Fortnightly
+
+| Version | Change |
+|---------|--------|
+| **v2.0.9** | New **Repeat → Fortnightly** option. Stored as standard iCal: `FREQ=WEEKLY;INTERVAL=2`. Week-day buttons work the same as **Weekly**. Existing fortnightly events open correctly in Edit. |
+
+### Display holidays (or any calendar) in the day header
+
+| Version | Change |
+|---------|--------|
+| **v2.0.9** | Per-calendar option **`displayInHeader: true`** (also **`showInDayHeader`**). **All-day** events from that calendar appear as small **pills under the day number**, not duplicated in the main event list. Ideal for **holidays** (`calendar.united_states_mn`, etc.). |
+
+Example (inside your `config-template-card` → `week-planner-card-plus` → `calendars`):
+
+```yaml
+- entity: calendar.united_states_mn
+  name: Holidays
+  color: var(--holidays-default-primary-color)
+  filter: ${ HOLCAL }
+  displayInHeader: true
+```
+
+Or in the card editor: open **Calendars** → your holiday calendar → enable **Display in day header**.
+
+### Month view — column alignment (“gap”)
+
+| Version | Change |
+|---------|--------|
+| **v2.0.9** | When **Hide days without events** is on, empty days now keep an invisible placeholder so the **7-column grid stays aligned** (fixes reported “gap” / misaligned columns). Outside-month padding days also keep their slot. |
+
+If a gap is still reported, check whether **Hide days without events** is enabled and share a screenshot of the month view.
+
+### Version history (short)
+
+| Version | Notes |
+|---------|--------|
+| 2.0.9 | Fortnightly repeat; `displayInHeader`; month grid alignment |
+| 2.0.8 | Visible Description field (native textarea) |
+| 2.0.7 | Edit dialog Description not wiped on open |
+| 2.0.6 | Local calendar grid title from Description fallback |
+| 2.0.5 | Edit field typing fix; `icon.png` |
+| 2.0.4 | `defaultAllDay` option |
+| 2.0.3 | Dutch language |
 
 ---
 
@@ -205,9 +276,28 @@ card_mod:
 - **Cloud calendars (Google/CalDAV/etc.)**: recurring events are created using Home Assistant’s calendar APIs (built-in dialog).
 - **Local Calendar (.ics)**: recurring events require writing an RRULE into the `.ics` file — use **ICS Calendar Tools** for add/update/delete with repeat support.
 
+**Repeat options in the built-in dialog:** No repeat, Daily, Weekly, **Fortnightly** (every 2 weeks), Monthly, Yearly — plus week-day selection for Weekly/Fortnightly, interval, and end (never / until date / count).
+
 ---
 
 ## Options
+
+### Per-calendar: `displayInHeader` (boolean)
+
+When `true`, **all-day** events from this calendar are shown as **pills in the day header** (under the date / weather), not in the main event list.
+
+- Use for **holidays**, birthdays (all-day), or any calendar you want as a compact day label.
+- **Timed** events from that calendar still appear in the normal list.
+- Also accepts legacy name: `showInDayHeader`
+
+```yaml
+calendars:
+  - entity: calendar.united_states_mn
+    name: Holidays
+    color: var(--holidays-default-primary-color)
+    displayInHeader: true
+```
+
 ### `defaultAllDay` (boolean)
 Default state of the **All day** toggle in the built-in Add/Edit dialog.
 

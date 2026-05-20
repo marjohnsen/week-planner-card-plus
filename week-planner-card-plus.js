@@ -171,6 +171,41 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
         line-height: var(--day-date-number-line-height);
     }
 
+    .container .day .day-header-events {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin: 4px 0 6px 0;
+        min-height: 0;
+    }
+
+    .container .day .day-header-pill {
+        display: inline-block;
+        max-width: 100%;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-size: 0.78em;
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--primary-text-color);
+        background: color-mix(in srgb, var(--pill-color, #888) 22%, transparent);
+        border-left: 3px solid var(--pill-color, #888);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .container .day.outside-month {
+        visibility: hidden;
+        pointer-events: none;
+        min-height: 0;
+    }
+
+    .container .day.hidden-empty {
+        visibility: hidden;
+        pointer-events: none;
+    }
+
     .container .day .date .text {
         font-size: var(--day-date-text-font-size);
     }
@@ -320,11 +355,37 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
         gap: 12px;
         min-width: 360px;
         box-sizing: border-box;
+        max-height: min(72vh, 560px);
+        overflow-y: auto;
+        padding-right: 4px;
     }
 
-    ha-dialog.rnr-edit-dialog ha-textfield,
-    ha-dialog.rnr-edit-dialog ha-textarea {
+    ha-dialog.rnr-edit-dialog ha-textfield {
         width: 100%;
+        box-sizing: border-box;
+        --mdc-text-field-ink-color: var(--primary-text-color);
+        --mdc-text-field-label-ink-color: var(--secondary-text-color);
+    }
+
+    ha-dialog.rnr-edit-dialog .rnr-edit-desc-block {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+    }
+
+    ha-dialog.rnr-edit-dialog .rnr-edit-desc-label {
+        width: auto;
+        min-width: 0;
+        font-weight: 600;
+    }
+
+    ha-dialog.rnr-edit-dialog textarea.rnr-edit-textarea {
+        width: 100%;
+        min-height: 96px;
+        resize: vertical;
+        line-height: 1.35;
+        font-family: inherit;
         box-sizing: border-box;
     }
 
@@ -439,7 +500,25 @@ window.__wpc_i18n_dict = window.__wpc_i18n_dict || {
     "More events": "More events",
     "Today": "Today",
     "Tomorrow": "Tomorrow",
-    "Yesterday": "Yesterday"
+    "Yesterday": "Yesterday",
+    "Add Event": "Add Event",
+    "Edit Event": "Edit Event",
+    "Calendar": "Calendar",
+    "Location": "Location",
+    "Description": "Description",
+    "Notes (optional)": "Notes (optional)",
+    "Start": "Start",
+    "End": "End",
+    "No repeat": "No repeat",
+    "Daily": "Daily",
+    "Weekly": "Weekly",
+    "Monthly": "Monthly",
+    "Yearly": "Yearly",
+    "Never": "Never",
+    "On date": "On date",
+    "Fortnightly": "Fortnightly",
+    "Display in day header": "Display in day header",
+    "Show all-day events from this calendar under the day number (e.g. holidays)": "Show all-day events from this calendar under the day number (e.g. holidays)"
   
     ,"Note: Google calendars can usually be deleted, but Home Assistant may not support editing them from the dashboard. If editing fails, use your calendar app directly.": "Note: Google calendars can usually be deleted, but Home Assistant may not support editing them from the dashboard. If editing fails, use your calendar app directly."},
   nl: {
@@ -487,6 +566,7 @@ window.__wpc_i18n_dict = window.__wpc_i18n_dict || {
       ,"After": "Na"
       ,"Location": "Locatie"
       ,"Description": "Beschrijving"
+      ,"Notes (optional)": "Notities (optioneel)"
       ,"Edit": "Bewerken"
     
   
@@ -598,8 +678,8 @@ customElements.define("week-planner-card-plus",class extends es{static styles=i8
                         </div>
                     </div>
                 `)}
-        `}_renderDays(){return this._days?W`
-            ${this._days.map(e=>e.isOutsideMonth?W`<div class="day ${e.class}"></div>`:this._hideDaysWithoutEvents&&0===e.events.length&&(this._hideTodayWithoutEvents||!this._isToday(e.date))?W``:W`
+        `}_rnrCalendarsForDayHeader(){return(this._calendars||[]).filter(c=>c&&(c.displayInHeader===!0||c.showInDayHeader===!0))}_rnrHideAllDayFromEventList(ev){if(!ev||!ev.fullDay)return!1;const hdr=this._rnrCalendarsForDayHeader();if(!hdr.length)return!1;const ents=new Set(hdr.map(c=>c.entity));return!!(ev.calendars&&ev.calendars.length&&ev.calendars.every(x=>ents.has(x)))}_rnrRenderDayHeaderEvents(e){const hdr=this._rnrCalendarsForDayHeader();if(!hdr.length||!e.events||!e.events.length)return W``;const ents=new Set(hdr.map(c=>c.entity));const pills=[];for(const k of e.events){const ev=this._calendarEvents[k];if(!ev||!ev.fullDay)continue;if(!ev.calendars||!ev.calendars.some(x=>ents.has(x)&&this._hideCalendars.indexOf(x)===-1))continue;pills.push(ev)}if(!pills.length)return W``;return W`<div class="day-header-events">${pills.map(ev=>W`<span class="day-header-pill" style="--pill-color:${ev.colors[0]||"#888"}" title="${ev.summary}">${ev.summary}</span>`)}</div>`}_renderDays(){return this._days?W`
+            ${this._days.map(e=>{if(e.isOutsideMonth)return W`<div class="day ${e.class} outside-month" aria-hidden="true"><div class="date"><span class="number">${e.date.day}</span></div></div>`;if(this._hideDaysWithoutEvents&&0===e.events.length&&(this._hideTodayWithoutEvents||!this._isToday(e.date)))return W`<div class="day ${e.class} hidden-empty" aria-hidden="true"></div>`;return W`
                     <div class="day ${e.class}" @click="${t=>this._rnrHandleDayClick(t,e)}" data-date="${e.date.day}" data-weekday="${e.date.weekday}" data-month="${e.date.month}" data-year="${e.date.year}" data-week="${e.date.weekNumber}">
                         <div class="date">
                             ${this._dayFormat?ed(e.date.toFormat(this._dayFormat)):W`
@@ -607,6 +687,7 @@ customElements.define("week-planner-card-plus",class extends es{static styles=i8
                                     ${this._showWeekDayText||!this._numberOfDaysIsMonth&&this._numberOfDays<7?W`<span class="text">${this._getWeekDayText(e.date)}</span>`:""}
                                 `}
                         </div>
+                        ${this._rnrRenderDayHeaderEvents(e)}
                         ${e.weather?W`
                                 <div class="weather" @click="${this._handleWeatherClick}">
                                     ${this._weather?.showTemperature||this._weather?.showLowTemperature?W`
@@ -630,8 +711,8 @@ customElements.define("week-planner-card-plus",class extends es{static styles=i8
                             ${this._renderEvents(e)}
                         </div>
                     </div>
-                `)}
-        `:W``}_renderEvents(e){let t=[];if(e.events.map(e=>{if(!this._calendarEvents[e])return;let n=Object.assign({},this._calendarEvents[e]),i=[...n.calendars],r=[...n.colors],a=0;for(;a<i.length;)this._hideCalendars.indexOf(i[a])>-1?(i.splice(a,1),r.splice(a,1)):a++;0!==i.length&&(n.calendars=i,n.colors=r,t.push(n))}),0===t.length)return this._renderNoEvents();let n=!1;return this._maxDayEvents>0&&t.length>this._maxDayEvents&&(t.splice(this._maxDayEvents),n=!0),W`
+                `})}
+        `:W``}_renderEvents(e){let t=[];if(e.events.map(e=>{if(!this._calendarEvents[e])return;let n=Object.assign({},this._calendarEvents[e]);if(this._rnrHideAllDayFromEventList(n))return;let i=[...n.calendars],r=[...n.colors],a=0;for(;a<i.length;)this._hideCalendars.indexOf(i[a])>-1?(i.splice(a,1),r.splice(a,1)):a++;0!==i.length&&(n.calendars=i,n.colors=r,t.push(n))}),0===t.length)return this._renderNoEvents();let n=!1;return this._maxDayEvents>0&&t.length>this._maxDayEvents&&(t.splice(this._maxDayEvents),n=!0),W`
             ${t.map(e=>{let t=[e.colors[0]];return W`
                     <div
                         class="event ${e.class}"
@@ -770,7 +851,7 @@ customElements.define("week-planner-card-plus",class extends es{static styles=i8
                 ${e.toFormat(this._dateFormat+" "+this._timeFormat)+" - "+t.toFormat(this._timeFormat)}
             `:W`
             ${e.toFormat(this._dateFormat+" "+this._timeFormat)} - ${t.toFormat(this._dateFormat+" "+this._timeFormat)}
-        `}_getLoader(){let e=document.createElement("div");return e.className="loader",e.style.display="none",e}_updateLoader(){this._loading>0?this._loader.style.display="inherit":this._loader.style.display="none"}_getWeatherIcon(e){let t=e?.condition;return t?rf[t.toLowerCase()]:null}_waitForHassAndConfig(){this.hass&&this._calendars?this._updateEvents():window.setTimeout(()=>{this._waitForHassAndConfig()},50)}_subscribeToWeatherForecast(){this._loading++,this._updateLoader();let e=!0;this.hass.connection.subscribeMessage(t=>{this._weatherForecast=t.forecast??[],e&&(this._loading--,e=!1)},{type:"weather/subscribe_forecast",forecast_type:this._weather.useTwiceDaily?"twice_daily":"daily",entity_id:this._weather.entity})}_updateEvents(){if(this._loading>0)return;this._loading++,this._updateLoader(),this._clearUpdateEventsTimeouts(),this._events={},this._calendarEvents={},this._startDate=this._getStartDate(),this._numberOfDaysIsMonth&&(this._numberOfDays=this._startDate.daysInMonth);let e=this._startDate,t=this._startDate.plus({days:this._numberOfDays}),n=eh.DateTime.now(),i=this._startDate.toISO();this._weather&&null===this._weatherForecast&&this._subscribeToWeatherForecast();let r=0;this._calendars.forEach(a=>{if(!a.entity||!this.hass.states[a.entity])return;a.name||(a={...a,name:this.hass.formatEntityAttributeValue(this.hass.states[a.entity],"friendly_name")}),a.sorting||(a={...a,sorting:r});let s=r;this._loading++,this.hass.callApi("get","calendars/"+a.entity+"?start="+encodeURIComponent(e.toISO())+"&end="+encodeURIComponent(t.toISO())).then(e=>{this._startDate.toISO()!==i||(this._calendarErrors[s]="",e.forEach(e=>{if(this._isFilterEvent(e,a.filter??""))return;let t=this._convertApiDate(e.start),i=this._convertApiDate(e.end);if(this._hidePastEvents&&i<n)return;let r=this._isFullDay(t,i);r||this._isSameDay(t,i)?this._addEvent(e,t,i,r,a):this._handleMultiDayEvent(e,t,i,a)})),this._loading--}).catch(e=>{this._calendarErrors[s]='Error while fetching calendar "'+a.entity+'": '+(e.error??"Unknown error"),this._loading--}),r++});let a=window.setInterval(()=>{0===this._loading&&(clearInterval(a),this._updateCard(),this._updateLoader(),this._updateEventsTimeouts.push(window.setTimeout(()=>{this._updateEvents()},1e3*this._updateInterval)))},50);this._loading--}_clearUpdateEventsTimeouts(){this._updateEventsTimeouts.forEach(e=>{clearTimeout(e)})}_isFilterEvent(e,t){return this._filter&&e.summary.match(this._filter)||t&&e.summary.match(t)}_addEvent(e,t,n,i,r){if(this._hideWeekend&&t.weekday>=6)return;let a=t.toISODate();this._events.hasOwnProperty(a)||(this._events[a]=[]);let s=this._filterEventSummary(e,r),o=t.toISO()+"-"+n.toISO()+"-"+s;this._combineSimilarEvents||(o=t.toISO()+"-"+n.toISO()+"-"+s+"-"+r.entity),this._calendarEvents.hasOwnProperty(o)?(this._calendarEvents[o].calendars.push(r.entity),this._calendarEvents[o].colors.push(r.color??"inherit"),r.name&&-1===this._calendarEvents[o].calendarNames.indexOf(r.name)&&this._calendarEvents[o].calendarNames.push(r.name),r.sorting<this._calendarEvents[o].calendarSorting&&(this._calendarEvents[o].calendarSorting=r.sorting)):(this._calendarEvents[o]={uid:e.uid??e.id??e.event_id??e.uid??null,summary:s,description:e.description??null,location:e.location??null,start:t,originalStart:this._convertApiDate(e.start),end:n,originalEnd:this._convertApiDate(e.end),fullDay:i,colors:[r.color??"inherit"],icon:r.icon??null,calendars:[r.entity],calendarSorting:r.sorting,calendarNames:[r.name],class:this._getEventClass(t,n,i)},this._events[a].push(o))}_filterEventSummary(e,t){let n=t.eventTitleField?e[t.eventTitleField]:e.summary;if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_getEventClass(e,t,n){let i=[],r=eh.DateTime.now();return n&&i.push("fullday"),t<r?i.push("past"):e<=r&&t>r?i.push("ongoing"):i.push("future"),i.join(" ")}_getDayClass(e){let t=[];return this._isToday(e)?t.push("today"):this._isTomorrow(e)?(t.push("tomorrow"),t.push("future")):this._isYesterday(e)?(t.push("yesterday"),t.push("past")):e>eh.DateTime.now()?t.push("future"):t.push("past"),t.push(["sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][e.weekday]),t.join(" ")}_handleMultiDayEvent(e,t,n,i){for(;t<n;){let r=t,a=(t=t.plus({days:1}).startOf("day"))<n?t:n;this._addEvent(e,r,a,this._isFullDay(r,a),i)}}_updateCard(){this._error=this._calendarErrors.join("\n").trim();let e=[],t=this._weather?this.hass.states[this._weather.entity]:null,n={};this._weatherForecast?.forEach(e=>{if(e.hasOwnProperty("is_daytime")&&!1===e.is_daytime)return;let i=eh.DateTime.fromISO(e.datetime).toISODate(),r=this._weather.roundTemperature?Math.round(e.temperature):e.temperature,a=this._weather.roundTemperature?Math.round(e.templow):e.templow;n[i]={icon:this._getWeatherIcon(e),condition:this.hass.formatEntityState(t,e.condition),temperature:this.hass.formatEntityAttributeValue(t,"temperature",r),templow:this.hass.formatEntityAttributeValue(t,"templow",a)}});let i=this._startDate,r=this._startDate.plus({days:this._numberOfDays}),a=null,s=String(this._startingDay).toLowerCase().trim();if(this._numberOfDaysIsMonth&&["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].includes(s)){a=i.plus({days:7}).month;let e=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].indexOf(s)+1;i=this._getWeekDayDate(i,e);let t=this._startDate.endOf("month");for(r=i;r<=t;)r=r.plus({days:7})}let o=0;for(;i<r;){if(!this._hideWeekend||i.weekday<6){let t=[],r=null!==a&&i.month!==a,s=i.toISODate();if(this._events.hasOwnProperty(s)&&!r&&(o+=(t=this._events[s].sort((e,t)=>this._calendarEvents[e].start.toISO()===this._calendarEvents[t].start.toISO()?this._calendarEvents[e].calendarSorting<this._calendarEvents[t].calendarSorting?1:this._calendarEvents[e].calendarSorting>this._calendarEvents[t].calendarSorting?-1:0:this._calendarEvents[e].start>this._calendarEvents[t].start?1:-1)).length,this._maxEvents>0&&o>this._maxEvents&&t.splice(this._maxEvents-o)),e.push({date:i,events:t,weather:r?null:n[s]??null,class:this._getDayClass(i)+(r?" outside-month":""),isOutsideMonth:r}),this._maxEvents>0&&o>=this._maxEvents)break}i=i.plus({days:1})}this._days=e}_getWeekDayText(e){return this._language.today&&this._isToday(e)?this._language.today:this._language.tomorrow&&this._isTomorrow(e)?this._language.tomorrow:this._language.yesterday&&this._isYesterday(e)?this._language.yesterday:[this._language.sunday,this._language.monday,this._language.tuesday,this._language.wednesday,this._language.thursday,this._language.friday,this._language.saturday,this._language.sunday][e.weekday]}_handleContainerClick(e){if(!this._actions)return;let t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={config:this._actions,action:"tap"},this.dispatchEvent(t),e.stopImmediatePropagation()}_handleEventClick(e,ev){try{const ent=ev?.currentTarget?.dataset?.entity; if(ent){e._rnrClickedEntity=ent; this._rnrLastClickedEntity=ent;}}catch(x){} this._currentEventDetails=e}async _rnrDeleteCurrentEvent(){
+        `}_getLoader(){let e=document.createElement("div");return e.className="loader",e.style.display="none",e}_updateLoader(){this._loading>0?this._loader.style.display="inherit":this._loader.style.display="none"}_getWeatherIcon(e){let t=e?.condition;return t?rf[t.toLowerCase()]:null}_waitForHassAndConfig(){this.hass&&this._calendars?this._updateEvents():window.setTimeout(()=>{this._waitForHassAndConfig()},50)}_subscribeToWeatherForecast(){this._loading++,this._updateLoader();let e=!0;this.hass.connection.subscribeMessage(t=>{this._weatherForecast=t.forecast??[],e&&(this._loading--,e=!1)},{type:"weather/subscribe_forecast",forecast_type:this._weather.useTwiceDaily?"twice_daily":"daily",entity_id:this._weather.entity})}_updateEvents(){if(this._loading>0)return;this._loading++,this._updateLoader(),this._clearUpdateEventsTimeouts(),this._events={},this._calendarEvents={},this._startDate=this._getStartDate(),this._numberOfDaysIsMonth&&(this._numberOfDays=this._startDate.daysInMonth);let e=this._startDate,t=this._startDate.plus({days:this._numberOfDays}),n=eh.DateTime.now(),i=this._startDate.toISO();this._weather&&null===this._weatherForecast&&this._subscribeToWeatherForecast();let r=0;this._calendars.forEach(a=>{if(!a.entity||!this.hass.states[a.entity])return;a.name||(a={...a,name:this.hass.formatEntityAttributeValue(this.hass.states[a.entity],"friendly_name")}),a.sorting||(a={...a,sorting:r});let s=r;this._loading++,this.hass.callApi("get","calendars/"+a.entity+"?start="+encodeURIComponent(e.toISO())+"&end="+encodeURIComponent(t.toISO())).then(e=>{this._startDate.toISO()!==i||(this._calendarErrors[s]="",e.forEach(e=>{if(this._isFilterEvent(e,a.filter??"",a))return;let t=this._convertApiDate(e.start),i=this._convertApiDate(e.end);if(this._hidePastEvents&&i<n)return;let r=this._isFullDay(t,i);r||this._isSameDay(t,i)?this._addEvent(e,t,i,r,a):this._handleMultiDayEvent(e,t,i,a)})),this._loading--}).catch(e=>{this._calendarErrors[s]='Error while fetching calendar "'+a.entity+'": '+(e.error??"Unknown error"),this._loading--}),r++});let a=window.setInterval(()=>{0===this._loading&&(clearInterval(a),this._updateCard(),this._updateLoader(),this._updateEventsTimeouts.push(window.setTimeout(()=>{this._updateEvents()},1e3*this._updateInterval)))},50);this._loading--}_clearUpdateEventsTimeouts(){this._updateEventsTimeouts.forEach(e=>{clearTimeout(e)})}_isFilterEvent(e,t,n){const s=this._rnrApiEventSummary(e,n||{});if(!s)return!1;return!!(this._filter&&s.match(this._filter)||t&&s.match(t))}_rnrApiEventSummary(e,t){let n=null;if(t&&t.eventTitleField!=null&&e[t.eventTitleField]!=null&&String(e[t.eventTitleField]).trim()!=="")n=String(e[t.eventTitleField]);else if(e.summary!=null&&String(e.summary).trim()!=="")n=String(e.summary);else if(e.title!=null&&String(e.title).trim()!=="")n=String(e.title);if(!n||!n.trim()){const d=(e.description??"").toString().trim();if(d){n=d.split(/\r?\n/)[0].trim();n.length>80&&(n=n.slice(0,77)+"...")}}return n?n.trim():""}_filterEventSummary(e,t){let n=this._rnrApiEventSummary(e,t);if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_addEvent(e,t,n,i,r){if(this._hideWeekend&&t.weekday>=6)return;let a=t.toISODate();this._events.hasOwnProperty(a)||(this._events[a]=[]);let s=this._filterEventSummary(e,r),o=t.toISO()+"-"+n.toISO()+"-"+s;this._combineSimilarEvents||(o=t.toISO()+"-"+n.toISO()+"-"+s+"-"+r.entity),this._calendarEvents.hasOwnProperty(o)?(this._calendarEvents[o].calendars.push(r.entity),this._calendarEvents[o].colors.push(r.color??"inherit"),r.name&&-1===this._calendarEvents[o].calendarNames.indexOf(r.name)&&this._calendarEvents[o].calendarNames.push(r.name),r.sorting<this._calendarEvents[o].calendarSorting&&(this._calendarEvents[o].calendarSorting=r.sorting)):(this._calendarEvents[o]={uid:e.uid??e.id??e.event_id??e.uid??null,summary:s,description:e.description??null,location:e.location??null,start:t,originalStart:this._convertApiDate(e.start),end:n,originalEnd:this._convertApiDate(e.end),fullDay:i,colors:[r.color??"inherit"],icon:r.icon??null,calendars:[r.entity],calendarSorting:r.sorting,calendarNames:[r.name],class:this._getEventClass(t,n,i)},this._events[a].push(o))}_filterEventSummary(e,t){let n=t.eventTitleField?e[t.eventTitleField]:e.summary;if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_getEventClass(e,t,n){let i=[],r=eh.DateTime.now();return n&&i.push("fullday"),t<r?i.push("past"):e<=r&&t>r?i.push("ongoing"):i.push("future"),i.join(" ")}_getDayClass(e){let t=[];return this._isToday(e)?t.push("today"):this._isTomorrow(e)?(t.push("tomorrow"),t.push("future")):this._isYesterday(e)?(t.push("yesterday"),t.push("past")):e>eh.DateTime.now()?t.push("future"):t.push("past"),t.push(["sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][e.weekday]),t.join(" ")}_handleMultiDayEvent(e,t,n,i){for(;t<n;){let r=t,a=(t=t.plus({days:1}).startOf("day"))<n?t:n;this._addEvent(e,r,a,this._isFullDay(r,a),i)}}_updateCard(){this._error=this._calendarErrors.join("\n").trim();let e=[],t=this._weather?this.hass.states[this._weather.entity]:null,n={};this._weatherForecast?.forEach(e=>{if(e.hasOwnProperty("is_daytime")&&!1===e.is_daytime)return;let i=eh.DateTime.fromISO(e.datetime).toISODate(),r=this._weather.roundTemperature?Math.round(e.temperature):e.temperature,a=this._weather.roundTemperature?Math.round(e.templow):e.templow;n[i]={icon:this._getWeatherIcon(e),condition:this.hass.formatEntityState(t,e.condition),temperature:this.hass.formatEntityAttributeValue(t,"temperature",r),templow:this.hass.formatEntityAttributeValue(t,"templow",a)}});let i=this._startDate,r=this._startDate.plus({days:this._numberOfDays}),a=null,s=String(this._startingDay).toLowerCase().trim();if(this._numberOfDaysIsMonth&&["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].includes(s)){a=i.plus({days:7}).month;let e=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].indexOf(s)+1;i=this._getWeekDayDate(i,e);let t=this._startDate.endOf("month");for(r=i;r<=t;)r=r.plus({days:7})}let o=0;for(;i<r;){if(!this._hideWeekend||i.weekday<6){let t=[],r=null!==a&&i.month!==a,s=i.toISODate();if(this._events.hasOwnProperty(s)&&!r&&(o+=(t=this._events[s].sort((e,t)=>this._calendarEvents[e].start.toISO()===this._calendarEvents[t].start.toISO()?this._calendarEvents[e].calendarSorting<this._calendarEvents[t].calendarSorting?1:this._calendarEvents[e].calendarSorting>this._calendarEvents[t].calendarSorting?-1:0:this._calendarEvents[e].start>this._calendarEvents[t].start?1:-1)).length,this._maxEvents>0&&o>this._maxEvents&&t.splice(this._maxEvents-o)),e.push({date:i,events:t,weather:r?null:n[s]??null,class:this._getDayClass(i)+(r?" outside-month":""),isOutsideMonth:r}),this._maxEvents>0&&o>=this._maxEvents)break}i=i.plus({days:1})}this._days=e}_getWeekDayText(e){return this._language.today&&this._isToday(e)?this._language.today:this._language.tomorrow&&this._isTomorrow(e)?this._language.tomorrow:this._language.yesterday&&this._isYesterday(e)?this._language.yesterday:[this._language.sunday,this._language.monday,this._language.tuesday,this._language.wednesday,this._language.thursday,this._language.friday,this._language.saturday,this._language.sunday][e.weekday]}_handleContainerClick(e){if(!this._actions)return;let t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={config:this._actions,action:"tap"},this.dispatchEvent(t),e.stopImmediatePropagation()}_handleEventClick(e,ev){try{const ent=ev?.currentTarget?.dataset?.entity; if(ent){e._rnrClickedEntity=ent; this._rnrLastClickedEntity=ent;}}catch(x){} this._currentEventDetails=e}async _rnrDeleteCurrentEvent(){
     try{
         const e = this._currentEventDetails;
         if(!e || !this.hass) return;
@@ -907,6 +988,7 @@ _rnrOpenEditDialog(){
     if(firstCal){ this._rnrMaybeWarnGoogleEdit(firstCal); }
         const rruleRaw = e.rrule || e.recurrenceRule || e.recurrence_rule || (e.recurrence && (e.recurrence.rrule||e.recurrence.rule)) || null;
     const rruleParsed = this._rnrParseRRuleString(rruleRaw);
+    const repeatFields=this._rnrRepeatFieldsFromParsed(rruleParsed);
 this._rnrEditDraft={
         // identity / target
         uid:e.uid??null,
@@ -925,12 +1007,13 @@ this._rnrEditDraft={
         old_location:e.location??null,
         old_description:e.description??null,
 
-        // new fields
+        // new fields (keep API description; title may use grid fallback in summary)
         summary:e.summary??"",
         start:oldStart,
         end:oldEnd,
         location:e.location??"",
-        description:e.description??""
+        description:(e.description!=null?String(e.description):""),
+        ...repeatFields
     };
     this._rnrEditMode="edit";
     this._rnrEditOpen=!0,this.requestUpdate();
@@ -1176,9 +1259,10 @@ _rnrOpenAddEventForDate(dt){
         window.location.hash=hash;
     }catch(err){}
 }
-_rnrEditSetField(e,t){
+_rnrEditSetField(e,t,n){
     if(!this._rnrEditDraft) return;
     this._rnrEditDraft={...this._rnrEditDraft,[e]:t};
+    if(n&&n.skipUpdate) return;
     this.requestUpdate();
 }
 _rnrParseRRuleString(rr){
@@ -1210,14 +1294,27 @@ _rnrParseRRuleString(rr){
     }else{
         out.untilDate=null;
     }
+    if(out.freq==="WEEKLY"&&(out.interval||1)===2) out.freq="fortnightly";
+    else if(out.freq==="WEEKLY") out.freq="weekly";
+    else if(out.freq) out.freq=out.freq.toLowerCase();
+    return out;
+}
+_rnrRepeatFieldsFromParsed(p){
+    const base={repeat_freq:"none",repeat_interval:1,repeat_byday:[],repeat_end_type:"never",repeat_until:"",repeat_count:""};
+    if(!p||!p.freq||p.freq==="none")return base;
+    const out={...base,repeat_freq:p.freq,repeat_interval:p.interval||1,repeat_byday:Array.isArray(p.byday)?[...p.byday]:[]};
+    if(p.count){out.repeat_end_type="count";out.repeat_count=String(p.count)}
+    else if(p.untilDate){out.repeat_end_type="until";out.repeat_until=p.untilDate}
     return out;
 }
 _rnrBuildRRuleFromDraft(d){
     try{
         if(!d) return null;
-        const freq=(d.repeat_freq||"none").toString().toUpperCase();
-        if(!freq || freq==="NONE" || freq==="NO" || freq==="NO REPEAT") return null;
-        const interval=Math.max(1, parseInt(d.repeat_interval,10)||1);
+        let freqRaw=(d.repeat_freq||"none").toString().toLowerCase();
+        if(!freqRaw||freqRaw==="none"||freqRaw==="no"||freqRaw==="no repeat") return null;
+        let interval=Math.max(1, parseInt(d.repeat_interval,10)||1);
+        let freq=freqRaw.toUpperCase();
+        if(freqRaw==="fortnightly"){freq="WEEKLY";interval=2}
         let r=`FREQ=${freq};INTERVAL=${interval}`;
         if(freq==="WEEKLY"){
             let byday=(Array.isArray(d.repeat_byday)?d.repeat_byday:[]).map(x=>String(x).toUpperCase());
@@ -1259,6 +1356,9 @@ async _rnrSaveEdit(){
     try{
         if(!this.hass||!this._rnrEditDraft){return}
         const d=this._rnrEditDraft;
+        let saveSummary=(d.summary??"").toString().trim();
+        const saveDesc=(d.description??"").toString().trim();
+        if(!saveSummary&&saveDesc){saveSummary=saveDesc.split(/\r?\n/)[0].trim();d.summary=saveSummary;}
 
         const cal = d.calendar || d.old_calendar || (d.calendars&&d.calendars.length?d.calendars[0]:null);
         if(!cal){
@@ -1558,8 +1658,19 @@ _rnrRenderEditDialog(){
                 <ha-textfield
                     label="${window.__wpc_i18n_t(this,"Title")}"
                     .value="${d.summary??""}"
-                    @input="${(e)=>this._rnrEditSetField("summary",e.target.value)}"
+                    @input="${(e)=>this._rnrEditSetField("summary",e.target.value,{skipUpdate:!0})}"
                 ></ha-textfield>
+
+                <div class="rnr-edit-desc-block">
+                    <label class="rnr-edit-label rnr-edit-desc-label">${window.__wpc_i18n_t(this,"Description")}</label>
+                    <textarea
+                        class="rnr-edit-dt rnr-edit-textarea"
+                        rows="4"
+                        placeholder="${window.__wpc_i18n_t(this,"Notes (optional)")}"
+                        .value="${d.description??""}"
+                        @input="${(e)=>this._rnrEditSetField("description",e.target.value,{skipUpdate:!0})}"
+                    ></textarea>
+                </div>
 
                 ${d.all_day?W`
                     <div class="rnr-edit-row">
@@ -1613,8 +1724,9 @@ _rnrRenderEditDialog(){
                                     this._rnrEditSetField("repeat_until","");
                                     this._rnrEditSetField("repeat_count","");
                                 }else{
-                                    if(!d.repeat_interval) this._rnrEditSetField("repeat_interval", 1);
-                                    if(v==="weekly" && (!Array.isArray(d.repeat_byday) || d.repeat_byday.length===0)){
+                                    if(v==="fortnightly") this._rnrEditSetField("repeat_interval", 2);
+                                    else if(!d.repeat_interval) this._rnrEditSetField("repeat_interval", 1);
+                                    if((v==="weekly"||v==="fortnightly") && (!Array.isArray(d.repeat_byday) || d.repeat_byday.length===0)){
                                         try{
                                             const dd=new Date(d.start);
                                             const map=["SU","MO","TU","WE","TH","FR","SA"];
@@ -1627,6 +1739,7 @@ _rnrRenderEditDialog(){
                             <option value="none" ?selected="${(d.repeat_freq||"none")==="none"}">${window.__wpc_i18n_t(this,"No repeat")}</option>
                             <option value="daily" ?selected="${(d.repeat_freq||"none")==="daily"}">${window.__wpc_i18n_t(this,"Daily")}</option>
                             <option value="weekly" ?selected="${(d.repeat_freq||"none")==="weekly"}">${window.__wpc_i18n_t(this,"Weekly")}</option>
+                            <option value="fortnightly" ?selected="${(d.repeat_freq||"none")==="fortnightly"}">${window.__wpc_i18n_t(this,"Fortnightly")}</option>
                             <option value="monthly" ?selected="${(d.repeat_freq||"none")==="monthly"}">${window.__wpc_i18n_t(this,"Monthly")}</option>
                             <option value="yearly" ?selected="${(d.repeat_freq||"none")==="yearly"}">${window.__wpc_i18n_t(this,"Yearly")}</option>
                         </select>
@@ -1642,7 +1755,7 @@ _rnrRenderEditDialog(){
                                 </div>
                             </div>
 
-                            ${ (d.repeat_freq==="weekly") ? W`
+                            ${ (d.repeat_freq==="weekly"||d.repeat_freq==="fortnightly") ? W`
                                 <div style="margin-top:10px;">
                                     <div style="opacity:.8; margin-bottom:6px;">Days</div>
                                     <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -1703,14 +1816,8 @@ _rnrRenderEditDialog(){
                 <ha-textfield
                     label="${window.__wpc_i18n_t(this, 'Location')}"
                     .value="${d.location??""}"
-                    @input="${(e)=>this._rnrEditSetField("location",e.target.value)}"
+                    @input="${(e)=>this._rnrEditSetField("location",e.target.value,{skipUpdate:!0})}"
                 ></ha-textfield>
-
-                <ha-textarea
-                    label="${window.__wpc_i18n_t(this, 'Description')}"
-                    .value="${d.description??""}"
-                    @input="${(e)=>this._rnrEditSetField("description",e.target.value)}"
-                ></ha-textarea>
             </div>
 
             <div class="rnr-actions">
@@ -1741,6 +1848,7 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
                                         ${this.addTextField("calendars."+t+".filterText","Filter event text (regex)")}
                                         ${this.addBooleanField("calendars."+t+".hideInLegend","Hide in legend")}
                                         ${this.addBooleanField("calendars."+t+".initiallyHidden","Initially hide calendar events")}
+                                        ${this.addBooleanField("calendars."+t+".displayInHeader",window.__wpc_i18n_t(this,"Display in day header"))}
                                         ${this.addButton("Remove calendar","mdi:trash-can",()=>{let e=JSON.parse(JSON.stringify(this._config));1===e.calendars.length?e.calendars=[]:(delete e.calendars[t],e.calendars=e.calendars.filter(Boolean)),this._config=e,this.dispatchConfigChangedEvent()})}
                                     `)}
                             `)}
@@ -1981,8 +2089,7 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
 
     return W`
       ${style}
-      ${this._days.map(d=>d.isOutsideMonth?W`<div class="day ${d.class}"></div>`:
-        (this._hideDaysWithoutEvents&&d.events.length===0&&(this._hideTodayWithoutEvents||!this._isToday(d.date))?W``:W`
+      ${this._days.map(d=>{if(d.isOutsideMonth)return W`<div class="day ${d.class} outside-month" aria-hidden="true"></div>`;if(this._hideDaysWithoutEvents&&d.events.length===0&&(this._hideTodayWithoutEvents||!this._isToday(d.date)))return W`<div class="day ${d.class} hidden-empty" aria-hidden="true"></div>`;return W`
           <div class="day ${d.class} schedule"
                @click="${t=>this._rnrHandleDayClick(t,d)}"
                data-date="${d.date.day}" data-weekday="${d.date.weekday}"
@@ -1993,6 +2100,7 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
                 ${this._showWeekDayText||!this._numberOfDaysIsMonth&&this._numberOfDays<7?W`<span class="text">${this._getWeekDayText(d.date)}</span>`:""}
               `}
             </div>
+            ${this._rnrRenderDayHeaderEvents(d)}
 
             ${d.weather?W`
               <div class="weather" @click="${this._handleWeatherClick}">
@@ -2033,8 +2141,7 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
               })()}
             </div>
           </div>
-        `)
-      )}
+        `})}
     `;
   }
 
