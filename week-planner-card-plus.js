@@ -2,7 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
-console.info("[week-planner-card-plus] loaded patched build 2026-07-24e (edit scope: ha-control-select vertical)");
+console.info("[week-planner-card-plus] loaded patched build 2026-07-24f (edit scope segmented + high-contrast active state)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -1885,7 +1885,7 @@ _rnrRenderEditDialog(){
                         .value="${d.edit_scope||"this"}"
                         .options="${[{value:"this",label:window.__wpc_i18n_t(this,"This event only")},{value:"future",label:window.__wpc_i18n_t(this,"This and following events")}]}"
                         @value-changed="${(e)=>this._rnrEditSetField("edit_scope",e.detail.value)}"
-                        style="width:100%;--control-select-color:var(--primary-color);"
+                        style="width:100%;--control-select-color:hsl(from var(--primary-color) h 60% 40%);"
                     ></ha-control-select>
                 </div>
                 `:W`` }
