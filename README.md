@@ -1,6 +1,6 @@
 # Week Planner Card Plus
 
-**Current release: v2.1.0**
+**Current release: v2.0.11**
 
 **Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
 This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.
@@ -35,7 +35,7 @@ For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicel
 
 ## Recent updates (July 2026)
 
-### v2.1.0 — Local Calendar edit + series-safe recurrence
+### v2.0.11 — Local Calendar edit + series-safe recurrence
 
 Thanks to [@enieuwy](https://github.com/enieuwy) for [PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6):
 
@@ -109,7 +109,7 @@ If a gap is still reported, check whether **Hide days without events** is enable
 
 | Version | Notes |
 |---------|--------|
-| 2.1.0 | Local Calendar native WS edit; series-safe recurring edit/delete ([PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6) by [@enieuwy](https://github.com/enieuwy)) |
+| 2.0.11 | Local Calendar native WS edit; series-safe recurring edit/delete ([PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6) by [@enieuwy](https://github.com/enieuwy)) |
 | 2.0.10 | Title + Location native inputs; edit-dialog title fallback |
 | 2.0.9 | Fortnightly repeat; `displayInHeader`; month grid alignment |
 | 2.0.8 | Visible Description field (native textarea) |
@@ -124,7 +124,7 @@ If a gap is still reported, check whether **Hide days without events** is enable
 ## Credits
 
 - **[@FamousWolf](https://github.com/FamousWolf)** — original [Week Planner Card](https://github.com/FamousWolf/week-planner-card)
-- **[@enieuwy](https://github.com/enieuwy)** — [PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6): Local Calendar native WS update + series-safe recurring edits/deletes (v2.1.0)
+- **[@enieuwy](https://github.com/enieuwy)** — [PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6): Local Calendar native WS update + series-safe recurring edits/deletes (v2.0.11)
 
 ---
 
@@ -303,7 +303,7 @@ card_mod:
 ## Notes on Repeat (Recurring Events)
 
 - **Cloud calendars (Google/CalDAV/etc.)**: recurring events are created using Home Assistant’s calendar APIs (built-in dialog).
-- **Local Calendar (.ics)**: from **v2.1.0**, add/edit/delete of recurring events uses Home Assistant’s native calendar WebSocket APIs with series-safe scopes (*This event* / *This and following* / *Whole series*). **ICS Calendar Tools** remains available as a fallback for file-level `.ics` work.
+- **Local Calendar (.ics)**: from **v2.0.11**, add/edit/delete of recurring events uses Home Assistant’s native calendar WebSocket APIs with series-safe scopes (*This event* / *This and following* / *Whole series*). **ICS Calendar Tools** remains available as a fallback for file-level `.ics` work.
 
 **Repeat options in the built-in dialog:** No repeat, Daily, Weekly, **Fortnightly** (every 2 weeks), Monthly, Yearly — plus week-day selection for Weekly/Fortnightly, interval, and end (never / until date / count).
 
@@ -347,7 +347,7 @@ Legacy mode. When `true`, empty-day clicks use the **older scripted Add flow**.
 
 ## Companion integration (Local Calendar)
 
-From **v2.1.0**, Local Calendar **edit/delete/repeat** primarily uses Home Assistant’s native calendar WebSocket APIs.
+From **v2.0.11**, Local Calendar **edit/delete/repeat** primarily uses Home Assistant’s native calendar WebSocket APIs.
 
 **ICS Calendar Tools** is still useful as a companion/fallback (and for scripting with `list_events`):
 
