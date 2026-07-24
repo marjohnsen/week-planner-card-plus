@@ -2,7 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
-console.info("[week-planner-card-plus] loaded patched build 2026-02-17a (defaultAllDay option)");
+console.info("[week-planner-card-plus] loaded patched build 2026-07-24a (defaultAllDay option; WS calendar/event/update edit fix)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -1408,16 +1408,45 @@ async _rnrSaveEdit(){
 
         // If we have a UID, do a true update.
         if(payload.uid){
-            try{ await this.hass.callService("ics_calendar_tools","update_event",payload); try{ if(!this._rnrIcsEditableEntities) this._rnrIcsEditableEntities=new Set(); if(cal) this._rnrIcsEditableEntities.add(cal); }catch(_e){} }
-            catch(e){
-                try{ await this.hass.callService("ics_calendar_tools","edit_event",payload); }
-                catch(e2){
-                    try{ await this.hass.callService("ics_calendar_tools","upsert_event",payload); }
-                    catch(e3){
-                        // Fallback: core calendar.update_event (may not exist depending on platform)
-                        await this.hass.callService("calendar","update_event",{entity_id:cal, ...payload});
+            let updated=false;
+            // Primary: native WS calendar/event/update (local_calendar, google, m365, caldav)
+            try{
+                if(this.hass?.connection?.sendMessagePromise){
+                    const allDayU = !!d.all_day;
+                    const normU = (s)=> s ? ((s+"").replace(".000Z","").replace(/Z$/,"")) : s;
+                    const rrRawU = ((payload.rrule||payload.recurrence_rule||"")+"").trim();
+                    const rrU = rrRawU.replace(/^RRULE:/i,"").trim();
+                    const wsEvtU = {
+                        summary:(payload.summary ?? "") || "",
+                        description:(payload.description ?? "") || "",
+                        location:(payload.location ?? "") || ""
+                    };
+                    if(allDayU){
+                        const sdU=(payload.start||"").slice(0,10);
+                        let edU=(payload.end||"").slice(0,10)||sdU;
+                        if(edU===sdU){ try{ const dtU=new Date(sdU+"T00:00:00"); dtU.setDate(dtU.getDate()+1); edU=dtU.toISOString().slice(0,10); }catch(_e){} }
+                        wsEvtU.dtstart=sdU; wsEvtU.dtend=edU;
+                    }else{
+                        wsEvtU.dtstart=normU(payload.start); wsEvtU.dtend=normU(payload.end);
                     }
+                    if(rrU) wsEvtU.rrule=rrU;
+                    const msgU={type:"calendar/event/update", entity_id:cal, uid:payload.uid, event:wsEvtU};
+                    if(d.recurrence_id) msgU.recurrence_id=d.recurrence_id;
+                    if(d.recurrence_range) msgU.recurrence_range=d.recurrence_range;
+                    await this.hass.connection.sendMessagePromise(msgU);
+                    updated=true;
                 }
+            }catch(e){ try{ console.warn("[week-planner-card-plus] ws calendar/event/update failed", e); }catch(_){} }
+
+            // Fallback: ics_calendar_tools (ICS-feed calendars managed by that integration)
+            if(!updated){
+                try{ await this.hass.callService("ics_calendar_tools","update_event",payload); updated=true; try{ if(!this._rnrIcsEditableEntities) this._rnrIcsEditableEntities=new Set(); if(cal) this._rnrIcsEditableEntities.add(cal); }catch(_e){} }
+                catch(e){ try{ console.warn("[week-planner-card-plus] ics_calendar_tools.update_event failed", e); }catch(_){} }
+            }
+
+            if(!updated){
+                alert("Edit failed. Check Home Assistant logs and browser console.");
+                return;
             }
 
             this._rnrCloseEditDialog();
