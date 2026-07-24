@@ -2,7 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
-console.info("[week-planner-card-plus] loaded patched build 2026-07-24h (description 1-row auto-grow; repeat label centered)");
+console.info("[week-planner-card-plus] loaded patched build 2026-07-24i (start+end same row)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -408,6 +408,14 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
         min-width: 48px;
         opacity: 0.9;
         font-size: 14px;
+    }
+
+    ha-dialog.rnr-edit-dialog .rnr-edit-half {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
     }
 
     ha-dialog.rnr-edit-dialog .rnr-edit-dt {
@@ -1931,43 +1939,42 @@ _rnrRenderEditDialog(){
                 </div>
 
                 ${d.all_day?W`
-                    <div class="rnr-edit-row">
-                        <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Start")}</label>
-                        <input class="rnr-edit-dt" type="date"
-                            .value="${toDateLocal(d.start)}"
-                            @input="${(e)=>{
-                                const v=e.target.value;
-                                this._rnrEditSetField("start", fromDateStart(v));
-                                // If end missing, keep it as same-day (exclusive end will become next day)
-                                if(!d.end){
-                                    this._rnrEditSetField("end", fromDateEndExclusive(v));
-                                }
-                            }}"
-                        />
-                    </div>
-
-                    <div class="rnr-edit-row">
-                        <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"End")}</label>
-                        <input class="rnr-edit-dt" type="date"
-                            .value="${toEndDateInclusive(d.end)||toDateLocal(d.start)}"
-                            @input="${(e)=>this._rnrEditSetField("end", fromDateEndExclusive(e.target.value))}"
-                        />
+                    <div class="rnr-edit-row" style="gap:14px;">
+                        <div class="rnr-edit-half">
+                            <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Start")}</label>
+                            <input class="rnr-edit-dt" type="date"
+                                .value="${toDateLocal(d.start)}"
+                                @input="${(e)=>{
+                                    const v=e.target.value;
+                                    this._rnrEditSetField("start", fromDateStart(v));
+                                    if(!d.end){ this._rnrEditSetField("end", fromDateEndExclusive(v)); }
+                                }}"
+                            />
+                        </div>
+                        <div class="rnr-edit-half">
+                            <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"End")}</label>
+                            <input class="rnr-edit-dt" type="date"
+                                .value="${toEndDateInclusive(d.end)||toDateLocal(d.start)}"
+                                @input="${(e)=>this._rnrEditSetField("end", fromDateEndExclusive(e.target.value))}"
+                            />
+                        </div>
                     </div>
                 `:W`
-                    <div class="rnr-edit-row">
-                        <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Start")}</label>
-                        <input class="rnr-edit-dt" type="datetime-local"
-                            .value="${toDTLocal(d.start)}"
-                            @input="${(e)=>this._rnrEditSetField("start",fromDTLocal(e.target.value))}"
-                        />
-                    </div>
-
-                    <div class="rnr-edit-row">
-                        <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"End")}</label>
-                        <input class="rnr-edit-dt" type="datetime-local"
-                            .value="${toDTLocal(d.end)}"
-                            @input="${(e)=>this._rnrEditSetField("end",fromDTLocal(e.target.value))}"
-                        />
+                    <div class="rnr-edit-row" style="gap:14px;">
+                        <div class="rnr-edit-half">
+                            <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Start")}</label>
+                            <input class="rnr-edit-dt" type="datetime-local"
+                                .value="${toDTLocal(d.start)}"
+                                @input="${(e)=>this._rnrEditSetField("start",fromDTLocal(e.target.value))}"
+                            />
+                        </div>
+                        <div class="rnr-edit-half">
+                            <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"End")}</label>
+                            <input class="rnr-edit-dt" type="datetime-local"
+                                .value="${toDTLocal(d.end)}"
+                                @input="${(e)=>this._rnrEditSetField("end",fromDTLocal(e.target.value))}"
+                            />
+                        </div>
                     </div>
                 `}
                 <div class="rnr-edit-row" style="align-items:flex-start;">
