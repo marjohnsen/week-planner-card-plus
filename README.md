@@ -26,14 +26,31 @@ For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicel
 - ✅ **Built-in Add/Edit dialog** with Title, Description, Location, and repeat (daily / weekly / **fortnightly** / monthly / yearly)
 - ✅ **Local Calendar (.ics)** title fallback when only Description is set in the file
 - ✅ Per-calendar **Display in day header** (e.g. holidays as pills under the day number)
-- ✅ Optional pairing with **ICS Calendar Tools** so edits/deletes persist to **Local Calendar (.ics)**  
+- ✅ **Series-safe recurring edit/delete** (This event / This and following / Whole series)
+- ✅ Local Calendar edits via Home Assistant’s native `calendar/event/update` WebSocket API
+- ✅ Optional pairing with **ICS Calendar Tools** as a fallback for Local Calendar `.ics`  
   https://github.com/randrcomputers/ics-calendar-tools
 
 ---
 
-## Recent updates (May 2026)
+## Recent updates (July 2026)
 
-Summary of fixes and features added in **v2.0.5 → v2.0.9**. After updating via HACS (or copying `week-planner-card-plus.js`), **hard-refresh** the dashboard (Ctrl+F5).
+### v2.1.0 — Local Calendar edit + series-safe recurrence
+
+Thanks to [@enieuwy](https://github.com/enieuwy) for [PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6):
+
+- **Local Calendar editing works** via Home Assistant’s native WebSocket `calendar/event/update` (no longer depends on non-existent `calendar.update_event` / missing ICS service names)
+- **Recurring events are series-safe** — edit/delete scopes: *This event only* / *This and following* / *Whole series* (uses `recurrence_id` + `recurrence_range`; avoids shifting the series DTSTART)
+- **Themed in-card delete dialog** (replaces stacked browser `confirm()` prompts)
+- Edit-dialog polish: Start/End on one row, compact description, clearer **Apply changes to** control
+
+After updating via HACS (or copying `week-planner-card-plus.js`), **hard-refresh** the dashboard (Ctrl+F5).
+
+---
+
+## Earlier updates (May 2026)
+
+Summary of fixes and features added in **v2.0.5 → v2.0.10**.
 
 ### Add / Edit dialog fixes
 
@@ -42,6 +59,7 @@ Summary of fixes and features added in **v2.0.5 → v2.0.9**. After updating via
 | **v2.0.5** | Title, Location, and Description fields no longer go blank while typing (fixed `ha-textfield` binding). HACS listing icon (`icon.png`). |
 | **v2.0.7** | Description no longer cleared when opening Edit (removed spurious `value-changed` on load). |
 | **v2.0.8** | **Description** is always visible: native `<textarea>` under **Title** (Home Assistant’s `ha-textarea` often does not render inside custom-card dialogs). Form scrolls when Repeat options are expanded. |
+| **v2.0.10** | **Title** and **Location** also use native inputs (same blank-while-typing issue as Description). Edit dialog fills Title from description fallback when Local Calendar `summary` is empty. |
 
 **Recommended field usage**
 
@@ -91,6 +109,8 @@ If a gap is still reported, check whether **Hide days without events** is enable
 
 | Version | Notes |
 |---------|--------|
+| 2.1.0 | Local Calendar native WS edit; series-safe recurring edit/delete ([PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6) by [@enieuwy](https://github.com/enieuwy)) |
+| 2.0.10 | Title + Location native inputs; edit-dialog title fallback |
 | 2.0.9 | Fortnightly repeat; `displayInHeader`; month grid alignment |
 | 2.0.8 | Visible Description field (native textarea) |
 | 2.0.7 | Edit dialog Description not wiped on open |
@@ -101,15 +121,23 @@ If a gap is still reported, check whether **Hide days without events** is enable
 
 ---
 
+## Credits
+
+- **[@FamousWolf](https://github.com/FamousWolf)** — original [Week Planner Card](https://github.com/FamousWolf/week-planner-card)
+- **[@enieuwy](https://github.com/enieuwy)** — [PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6): Local Calendar native WS update + series-safe recurring edits/deletes (v2.1.0)
+
+---
+
 ## Calendar support (Google / cloud + Local Calendar)
 
 Week Planner Card Plus works with **Home Assistant calendar entities** (`calendar.*`) from many sources.  
 **What you can do (Add/Edit/Delete/Repeat) depends on what your calendar integration supports.**
 
-Note certain calendars have limitations.
-CalDAV cannot edit or delete events. But you can add events
-Google cannot edit events. But You can add and delete events
-Local calendars you can delete, add and edit events with ics calendar tools addon!
+Note certain calendars have limitations:
+
+- **CalDAV** — can usually **add** events; edit/delete often not available (no UID)
+- **Google** — can usually **add** and **delete**; **edit** support varies
+- **Local Calendar** — **add / edit / delete** (including recurring scopes) via the card’s native Home Assistant WebSocket path; **ICS Calendar Tools** remains a useful companion/fallback for file-level `.ics` work
 
 ### Cloud calendars (Google / CalDAV / etc.)
 - ✅ **View events** in the planner
@@ -121,8 +149,9 @@ Local calendars you can delete, add and edit events with ics calendar tools addo
 ### Local Calendar (.ics)
 - ✅ **View events**
 - ✅ **Add events**
-- ✅ **Edit/Delete** typically requires **ICS Calendar Tools** to modify the underlying `.ics` file
-- ✅ **Repeat (RRULE)** supported via **ICS Calendar Tools**
+- ✅ **Edit / Delete** via native Home Assistant calendar WebSocket APIs (including This event / This and following / Whole series)
+- ✅ **ICS Calendar Tools** still useful as a fallback / for direct `.ics` tooling  
+  https://github.com/randrcomputers/ics-calendar-tools
 
 ---
 
@@ -274,9 +303,11 @@ card_mod:
 ## Notes on Repeat (Recurring Events)
 
 - **Cloud calendars (Google/CalDAV/etc.)**: recurring events are created using Home Assistant’s calendar APIs (built-in dialog).
-- **Local Calendar (.ics)**: recurring events require writing an RRULE into the `.ics` file — use **ICS Calendar Tools** for add/update/delete with repeat support.
+- **Local Calendar (.ics)**: from **v2.1.0**, add/edit/delete of recurring events uses Home Assistant’s native calendar WebSocket APIs with series-safe scopes (*This event* / *This and following* / *Whole series*). **ICS Calendar Tools** remains available as a fallback for file-level `.ics` work.
 
 **Repeat options in the built-in dialog:** No repeat, Daily, Weekly, **Fortnightly** (every 2 weeks), Monthly, Yearly — plus week-day selection for Weekly/Fortnightly, interval, and end (never / until date / count).
+
+For an **existing** recurring series, the pattern editor is disabled (delete + re-create to change the RRULE). Use **Apply changes to** for occurrence/future field edits.
 
 ---
 
@@ -314,9 +345,11 @@ Legacy mode. When `true`, empty-day clicks use the **older scripted Add flow**.
 
 ---
 
-## Companion integration (Local Calendar editing)
+## Companion integration (Local Calendar)
 
-If you want Local Calendar `.ics` **edit/delete/repeat** to behave like cloud calendars, install:
+From **v2.1.0**, Local Calendar **edit/delete/repeat** primarily uses Home Assistant’s native calendar WebSocket APIs.
+
+**ICS Calendar Tools** is still useful as a companion/fallback (and for scripting with `list_events`):
 
 - **ICS Calendar Tools**  
   https://github.com/randrcomputers/ics-calendar-tools
