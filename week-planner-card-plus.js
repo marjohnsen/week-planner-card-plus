@@ -2,7 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
-console.info("[week-planner-card-plus] loaded patched build 2026-07-24f (edit scope segmented + high-contrast active state)");
+console.info("[week-planner-card-plus] loaded patched build 2026-07-24h (description 1-row auto-grow; repeat label centered)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -389,7 +389,10 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
     }
 
     ha-dialog.rnr-edit-dialog textarea.rnr-edit-textarea {
-        min-height: 96px;
+        min-height: 34px;
+        max-height: 220px;
+        field-sizing: content;
+        overflow-y: auto;
         resize: vertical;
     }
 
@@ -1920,7 +1923,7 @@ _rnrRenderEditDialog(){
                     <label class="rnr-edit-label rnr-edit-desc-label">${window.__wpc_i18n_t(this,"Description")}</label>
                     <textarea
                         class="rnr-edit-dt rnr-edit-textarea"
-                        rows="4"
+                        rows="1"
                         placeholder="${window.__wpc_i18n_t(this,"Notes (optional)")}"
                         .value="${d.description??""}"
                         @input="${(e)=>this._rnrEditSetField("description",e.target.value,{skipUpdate:!0})}"
@@ -1968,7 +1971,7 @@ _rnrRenderEditDialog(){
                     </div>
                 `}
                 <div class="rnr-edit-row" style="align-items:flex-start;">
-                    <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Repeat")}</label>
+                    <label class="rnr-edit-label" style="height:40px;display:flex;align-items:center;">${window.__wpc_i18n_t(this,"Repeat")}</label>
                     <div style="flex:1;">
                         <select class="rnr-edit-dt" style="height:40px;" ?disabled="${!!d._isRecurring}" title="${d._isRecurring?window.__wpc_i18n_t(this,"To change the repeat pattern, delete and re-create the event."):""}"
                             @change="${(e)=>{
