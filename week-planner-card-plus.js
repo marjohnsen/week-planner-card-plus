@@ -2,7 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
-console.info("[week-planner-card-plus] loaded patched build 2026-07-24a (defaultAllDay option; WS calendar/event/update edit fix)");
+console.info("[week-planner-card-plus] loaded patched build 2026-07-24c (defaultAllDay; WS create/update/delete; recurrence-aware edit: this/this-and-following scope, series-safe)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -855,13 +855,33 @@ customElements.define("week-planner-card-plus",class extends es{static styles=i8
                 ${e.toFormat(this._dateFormat+" "+this._timeFormat)+" - "+t.toFormat(this._timeFormat)}
             `:W`
             ${e.toFormat(this._dateFormat+" "+this._timeFormat)} - ${t.toFormat(this._dateFormat+" "+this._timeFormat)}
-        `}_getLoader(){let e=document.createElement("div");return e.className="loader",e.style.display="none",e}_updateLoader(){this._loading>0?this._loader.style.display="inherit":this._loader.style.display="none"}_getWeatherIcon(e){let t=e?.condition;return t?rf[t.toLowerCase()]:null}_waitForHassAndConfig(){this.hass&&this._calendars?this._updateEvents():window.setTimeout(()=>{this._waitForHassAndConfig()},50)}_subscribeToWeatherForecast(){this._loading++,this._updateLoader();let e=!0;this.hass.connection.subscribeMessage(t=>{this._weatherForecast=t.forecast??[],e&&(this._loading--,e=!1)},{type:"weather/subscribe_forecast",forecast_type:this._weather.useTwiceDaily?"twice_daily":"daily",entity_id:this._weather.entity})}_updateEvents(){if(this._loading>0)return;this._loading++,this._updateLoader(),this._clearUpdateEventsTimeouts(),this._events={},this._calendarEvents={},this._startDate=this._getStartDate(),this._numberOfDaysIsMonth&&(this._numberOfDays=this._startDate.daysInMonth);let e=this._startDate,t=this._startDate.plus({days:this._numberOfDays}),n=eh.DateTime.now(),i=this._startDate.toISO();this._weather&&null===this._weatherForecast&&this._subscribeToWeatherForecast();let r=0;this._calendars.forEach(a=>{if(!a.entity||!this.hass.states[a.entity])return;a.name||(a={...a,name:this.hass.formatEntityAttributeValue(this.hass.states[a.entity],"friendly_name")}),a.sorting||(a={...a,sorting:r});let s=r;this._loading++,this.hass.callApi("get","calendars/"+a.entity+"?start="+encodeURIComponent(e.toISO())+"&end="+encodeURIComponent(t.toISO())).then(e=>{this._startDate.toISO()!==i||(this._calendarErrors[s]="",e.forEach(e=>{if(this._isFilterEvent(e,a.filter??"",a))return;let t=this._convertApiDate(e.start),i=this._convertApiDate(e.end);if(this._hidePastEvents&&i<n)return;let r=this._isFullDay(t,i);r||this._isSameDay(t,i)?this._addEvent(e,t,i,r,a):this._handleMultiDayEvent(e,t,i,a)})),this._loading--}).catch(e=>{this._calendarErrors[s]='Error while fetching calendar "'+a.entity+'": '+(e.error??"Unknown error"),this._loading--}),r++});let a=window.setInterval(()=>{0===this._loading&&(clearInterval(a),this._updateCard(),this._updateLoader(),this._updateEventsTimeouts.push(window.setTimeout(()=>{this._updateEvents()},1e3*this._updateInterval)))},50);this._loading--}_clearUpdateEventsTimeouts(){this._updateEventsTimeouts.forEach(e=>{clearTimeout(e)})}_isFilterEvent(e,t,n){const s=this._rnrApiEventSummary(e,n||{});if(!s)return!1;return!!(this._filter&&s.match(this._filter)||t&&s.match(t))}_rnrApiEventSummary(e,t){let n=null;if(t&&t.eventTitleField!=null&&e[t.eventTitleField]!=null&&String(e[t.eventTitleField]).trim()!=="")n=String(e[t.eventTitleField]);else if(e.summary!=null&&String(e.summary).trim()!=="")n=String(e.summary);else if(e.title!=null&&String(e.title).trim()!=="")n=String(e.title);if(!n||!n.trim()){const d=(e.description??"").toString().trim();if(d){n=d.split(/\r?\n/)[0].trim();n.length>80&&(n=n.slice(0,77)+"...")}}return n?n.trim():""}_filterEventSummary(e,t){let n=this._rnrApiEventSummary(e,t);if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_addEvent(e,t,n,i,r){if(this._hideWeekend&&t.weekday>=6)return;let a=t.toISODate();this._events.hasOwnProperty(a)||(this._events[a]=[]);let s=this._filterEventSummary(e,r),o=t.toISO()+"-"+n.toISO()+"-"+s;this._combineSimilarEvents||(o=t.toISO()+"-"+n.toISO()+"-"+s+"-"+r.entity),this._calendarEvents.hasOwnProperty(o)?(this._calendarEvents[o].calendars.push(r.entity),this._calendarEvents[o].colors.push(r.color??"inherit"),r.name&&-1===this._calendarEvents[o].calendarNames.indexOf(r.name)&&this._calendarEvents[o].calendarNames.push(r.name),r.sorting<this._calendarEvents[o].calendarSorting&&(this._calendarEvents[o].calendarSorting=r.sorting)):(this._calendarEvents[o]={uid:e.uid??e.id??e.event_id??e.uid??null,summary:s,description:e.description??null,location:e.location??null,start:t,originalStart:this._convertApiDate(e.start),end:n,originalEnd:this._convertApiDate(e.end),fullDay:i,colors:[r.color??"inherit"],icon:r.icon??null,calendars:[r.entity],calendarSorting:r.sorting,calendarNames:[r.name],class:this._getEventClass(t,n,i)},this._events[a].push(o))}_getEventClass(e,t,n){let i=[],r=eh.DateTime.now();return n&&i.push("fullday"),t<r?i.push("past"):e<=r&&t>r?i.push("ongoing"):i.push("future"),i.join(" ")}_getDayClass(e){let t=[];return this._isToday(e)?t.push("today"):this._isTomorrow(e)?(t.push("tomorrow"),t.push("future")):this._isYesterday(e)?(t.push("yesterday"),t.push("past")):e>eh.DateTime.now()?t.push("future"):t.push("past"),t.push(["sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][e.weekday]),t.join(" ")}_handleMultiDayEvent(e,t,n,i){for(;t<n;){let r=t,a=(t=t.plus({days:1}).startOf("day"))<n?t:n;this._addEvent(e,r,a,this._isFullDay(r,a),i)}}_updateCard(){this._error=this._calendarErrors.join("\n").trim();let e=[],t=this._weather?this.hass.states[this._weather.entity]:null,n={};this._weatherForecast?.forEach(e=>{if(e.hasOwnProperty("is_daytime")&&!1===e.is_daytime)return;let i=eh.DateTime.fromISO(e.datetime).toISODate(),r=this._weather.roundTemperature?Math.round(e.temperature):e.temperature,a=this._weather.roundTemperature?Math.round(e.templow):e.templow;n[i]={icon:this._getWeatherIcon(e),condition:this.hass.formatEntityState(t,e.condition),temperature:this.hass.formatEntityAttributeValue(t,"temperature",r),templow:this.hass.formatEntityAttributeValue(t,"templow",a)}});let i=this._startDate,r=this._startDate.plus({days:this._numberOfDays}),a=null,s=String(this._startingDay).toLowerCase().trim();if(this._numberOfDaysIsMonth&&["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].includes(s)){a=i.plus({days:7}).month;let e=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].indexOf(s)+1;i=this._getWeekDayDate(i,e);let t=this._startDate.endOf("month");for(r=i;r<=t;)r=r.plus({days:7})}let o=0;for(;i<r;){if(!this._hideWeekend||i.weekday<6){let t=[],r=null!==a&&i.month!==a,s=i.toISODate();if(this._events.hasOwnProperty(s)&&!r&&(o+=(t=this._events[s].sort((e,t)=>this._calendarEvents[e].start.toISO()===this._calendarEvents[t].start.toISO()?this._calendarEvents[e].calendarSorting<this._calendarEvents[t].calendarSorting?1:this._calendarEvents[e].calendarSorting>this._calendarEvents[t].calendarSorting?-1:0:this._calendarEvents[e].start>this._calendarEvents[t].start?1:-1)).length,this._maxEvents>0&&o>this._maxEvents&&t.splice(this._maxEvents-o)),e.push({date:i,events:t,weather:r?null:n[s]??null,class:this._getDayClass(i)+(r?" outside-month":""),isOutsideMonth:r}),this._maxEvents>0&&o>=this._maxEvents)break}i=i.plus({days:1})}this._days=e}_getWeekDayText(e){return this._language.today&&this._isToday(e)?this._language.today:this._language.tomorrow&&this._isTomorrow(e)?this._language.tomorrow:this._language.yesterday&&this._isYesterday(e)?this._language.yesterday:[this._language.sunday,this._language.monday,this._language.tuesday,this._language.wednesday,this._language.thursday,this._language.friday,this._language.saturday,this._language.sunday][e.weekday]}_handleContainerClick(e){if(!this._actions)return;let t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={config:this._actions,action:"tap"},this.dispatchEvent(t),e.stopImmediatePropagation()}_handleEventClick(e,ev){try{const ent=ev?.currentTarget?.dataset?.entity; if(ent){e._rnrClickedEntity=ent; this._rnrLastClickedEntity=ent;}}catch(x){} this._currentEventDetails=e}async _rnrDeleteCurrentEvent(){
+        `}_getLoader(){let e=document.createElement("div");return e.className="loader",e.style.display="none",e}_updateLoader(){this._loading>0?this._loader.style.display="inherit":this._loader.style.display="none"}_getWeatherIcon(e){let t=e?.condition;return t?rf[t.toLowerCase()]:null}_waitForHassAndConfig(){this.hass&&this._calendars?this._updateEvents():window.setTimeout(()=>{this._waitForHassAndConfig()},50)}_subscribeToWeatherForecast(){this._loading++,this._updateLoader();let e=!0;this.hass.connection.subscribeMessage(t=>{this._weatherForecast=t.forecast??[],e&&(this._loading--,e=!1)},{type:"weather/subscribe_forecast",forecast_type:this._weather.useTwiceDaily?"twice_daily":"daily",entity_id:this._weather.entity})}_updateEvents(){if(this._loading>0)return;this._loading++,this._updateLoader(),this._clearUpdateEventsTimeouts(),this._events={},this._calendarEvents={},this._startDate=this._getStartDate(),this._numberOfDaysIsMonth&&(this._numberOfDays=this._startDate.daysInMonth);let e=this._startDate,t=this._startDate.plus({days:this._numberOfDays}),n=eh.DateTime.now(),i=this._startDate.toISO();this._weather&&null===this._weatherForecast&&this._subscribeToWeatherForecast();let r=0;this._calendars.forEach(a=>{if(!a.entity||!this.hass.states[a.entity])return;a.name||(a={...a,name:this.hass.formatEntityAttributeValue(this.hass.states[a.entity],"friendly_name")}),a.sorting||(a={...a,sorting:r});let s=r;this._loading++,this.hass.callApi("get","calendars/"+a.entity+"?start="+encodeURIComponent(e.toISO())+"&end="+encodeURIComponent(t.toISO())).then(e=>{this._startDate.toISO()!==i||(this._calendarErrors[s]="",e.forEach(e=>{if(this._isFilterEvent(e,a.filter??"",a))return;let t=this._convertApiDate(e.start),i=this._convertApiDate(e.end);if(this._hidePastEvents&&i<n)return;let r=this._isFullDay(t,i);r||this._isSameDay(t,i)?this._addEvent(e,t,i,r,a):this._handleMultiDayEvent(e,t,i,a)})),this._loading--}).catch(e=>{this._calendarErrors[s]='Error while fetching calendar "'+a.entity+'": '+(e.error??"Unknown error"),this._loading--}),r++});let a=window.setInterval(()=>{0===this._loading&&(clearInterval(a),this._updateCard(),this._updateLoader(),this._updateEventsTimeouts.push(window.setTimeout(()=>{this._updateEvents()},1e3*this._updateInterval)))},50);this._loading--}_clearUpdateEventsTimeouts(){this._updateEventsTimeouts.forEach(e=>{clearTimeout(e)})}_isFilterEvent(e,t,n){const s=this._rnrApiEventSummary(e,n||{});if(!s)return!1;return!!(this._filter&&s.match(this._filter)||t&&s.match(t))}_rnrApiEventSummary(e,t){let n=null;if(t&&t.eventTitleField!=null&&e[t.eventTitleField]!=null&&String(e[t.eventTitleField]).trim()!=="")n=String(e[t.eventTitleField]);else if(e.summary!=null&&String(e.summary).trim()!=="")n=String(e.summary);else if(e.title!=null&&String(e.title).trim()!=="")n=String(e.title);if(!n||!n.trim()){const d=(e.description??"").toString().trim();if(d){n=d.split(/\r?\n/)[0].trim();n.length>80&&(n=n.slice(0,77)+"...")}}return n?n.trim():""}_filterEventSummary(e,t){let n=this._rnrApiEventSummary(e,t);if(!n)return"";if(t.filterText&&(n=n.replace(new RegExp(t.filterText),"")),this._filterText&&(n=n.replace(new RegExp(this._filterText),"")),t.replaceTitleText)for(let e in t.replaceTitleText){let i=t.replaceTitleText[e];n=n.replace(e,i)}if(this._replaceTitleText)for(let e in this._replaceTitleText){let t=this._replaceTitleText[e];n=n.replace(e,t)}return n}_addEvent(e,t,n,i,r){if(this._hideWeekend&&t.weekday>=6)return;let a=t.toISODate();this._events.hasOwnProperty(a)||(this._events[a]=[]);let s=this._filterEventSummary(e,r),o=t.toISO()+"-"+n.toISO()+"-"+s;this._combineSimilarEvents||(o=t.toISO()+"-"+n.toISO()+"-"+s+"-"+r.entity),this._calendarEvents.hasOwnProperty(o)?(this._calendarEvents[o].calendars.push(r.entity),this._calendarEvents[o].colors.push(r.color??"inherit"),r.name&&-1===this._calendarEvents[o].calendarNames.indexOf(r.name)&&this._calendarEvents[o].calendarNames.push(r.name),r.sorting<this._calendarEvents[o].calendarSorting&&(this._calendarEvents[o].calendarSorting=r.sorting)):(this._calendarEvents[o]={uid:e.uid??e.id??e.event_id??e.uid??null,rrule:(e.rrule??e.recurrence_rule??null),recurrence_id:(e.recurrence_id??e.recurrenceId??null),summary:s,description:e.description??null,location:e.location??null,start:t,originalStart:this._convertApiDate(e.start),end:n,originalEnd:this._convertApiDate(e.end),fullDay:i,colors:[r.color??"inherit"],icon:r.icon??null,calendars:[r.entity],calendarSorting:r.sorting,calendarNames:[r.name],class:this._getEventClass(t,n,i)},this._events[a].push(o))}_getEventClass(e,t,n){let i=[],r=eh.DateTime.now();return n&&i.push("fullday"),t<r?i.push("past"):e<=r&&t>r?i.push("ongoing"):i.push("future"),i.join(" ")}_getDayClass(e){let t=[];return this._isToday(e)?t.push("today"):this._isTomorrow(e)?(t.push("tomorrow"),t.push("future")):this._isYesterday(e)?(t.push("yesterday"),t.push("past")):e>eh.DateTime.now()?t.push("future"):t.push("past"),t.push(["sunday","monday","tuesday","wednesday","thursday","friday","saturday","sunday"][e.weekday]),t.join(" ")}_handleMultiDayEvent(e,t,n,i){for(;t<n;){let r=t,a=(t=t.plus({days:1}).startOf("day"))<n?t:n;this._addEvent(e,r,a,this._isFullDay(r,a),i)}}_updateCard(){this._error=this._calendarErrors.join("\n").trim();let e=[],t=this._weather?this.hass.states[this._weather.entity]:null,n={};this._weatherForecast?.forEach(e=>{if(e.hasOwnProperty("is_daytime")&&!1===e.is_daytime)return;let i=eh.DateTime.fromISO(e.datetime).toISODate(),r=this._weather.roundTemperature?Math.round(e.temperature):e.temperature,a=this._weather.roundTemperature?Math.round(e.templow):e.templow;n[i]={icon:this._getWeatherIcon(e),condition:this.hass.formatEntityState(t,e.condition),temperature:this.hass.formatEntityAttributeValue(t,"temperature",r),templow:this.hass.formatEntityAttributeValue(t,"templow",a)}});let i=this._startDate,r=this._startDate.plus({days:this._numberOfDays}),a=null,s=String(this._startingDay).toLowerCase().trim();if(this._numberOfDaysIsMonth&&["sunday","monday","tuesday","wednesday","thursday","friday","saturday"].includes(s)){a=i.plus({days:7}).month;let e=["monday","tuesday","wednesday","thursday","friday","saturday","sunday"].indexOf(s)+1;i=this._getWeekDayDate(i,e);let t=this._startDate.endOf("month");for(r=i;r<=t;)r=r.plus({days:7})}let o=0;for(;i<r;){if(!this._hideWeekend||i.weekday<6){let t=[],r=null!==a&&i.month!==a,s=i.toISODate();if(this._events.hasOwnProperty(s)&&!r&&(o+=(t=this._events[s].sort((e,t)=>this._calendarEvents[e].start.toISO()===this._calendarEvents[t].start.toISO()?this._calendarEvents[e].calendarSorting<this._calendarEvents[t].calendarSorting?1:this._calendarEvents[e].calendarSorting>this._calendarEvents[t].calendarSorting?-1:0:this._calendarEvents[e].start>this._calendarEvents[t].start?1:-1)).length,this._maxEvents>0&&o>this._maxEvents&&t.splice(this._maxEvents-o)),e.push({date:i,events:t,weather:r?null:n[s]??null,class:this._getDayClass(i)+(r?" outside-month":""),isOutsideMonth:r}),this._maxEvents>0&&o>=this._maxEvents)break}i=i.plus({days:1})}this._days=e}_getWeekDayText(e){return this._language.today&&this._isToday(e)?this._language.today:this._language.tomorrow&&this._isTomorrow(e)?this._language.tomorrow:this._language.yesterday&&this._isYesterday(e)?this._language.yesterday:[this._language.sunday,this._language.monday,this._language.tuesday,this._language.wednesday,this._language.thursday,this._language.friday,this._language.saturday,this._language.sunday][e.weekday]}_handleContainerClick(e){if(!this._actions)return;let t=new Event("hass-action",{bubbles:!0,composed:!0});t.detail={config:this._actions,action:"tap"},this.dispatchEvent(t),e.stopImmediatePropagation()}_handleEventClick(e,ev){try{const ent=ev?.currentTarget?.dataset?.entity; if(ent){e._rnrClickedEntity=ent; this._rnrLastClickedEntity=ent;}}catch(x){} this._currentEventDetails=e}async _rnrDeleteCurrentEvent(){
     try{
         const e = this._currentEventDetails;
         if(!e || !this.hass) return;
 
         const title = e.summary || "this event";
-        if(!confirm('Delete "'+title+'"?')) return;
+        const _isRec = !!(e.rrule);
+        const _rid = e.recurrence_id || null;
+        let _delScope = "series";
+        if(_isRec && _rid){
+            if(confirm('"'+title+'" repeats.\n\nOK = delete ONLY this occurrence.\nCancel = more options.')){
+                _delScope = "this";
+            }else{
+                if(confirm('OK = delete this and all FUTURE occurrences.\nCancel = delete the ENTIRE series.')){
+                    _delScope = "future";
+                }else{
+                    if(!confirm('Delete the ENTIRE "'+title+'" series?')) return;
+                    _delScope = "series";
+                }
+            }
+        }else if(_isRec){
+            if(!confirm('Delete the entire repeating series "'+title+'"?')) return;
+            _delScope = "series";
+        }else{
+            if(!confirm('Delete "'+title+'"?')) return;
+            _delScope = "series";
+        }
 
         try{ this._closeDialog(); }catch(_e){}
 
@@ -886,12 +906,14 @@ customElements.define("week-planner-card-plus",class extends es{static styles=i8
             if(ent && uid && this.hass.connection && this.hass.connection.sendMessagePromise){
                 const payload = {type:"calendar/event/delete",entity_id:ent,uid:uid};
                 const rid = e.recurrence_id ?? e.recurrenceId ?? e.recurrenceID ?? null;
-                if(rid) payload.recurrence_id = rid;
+                if(_delScope==="this" && rid){ payload.recurrence_id = rid; payload.recurrence_range = "THISEVENT"; }
+                else if(_delScope==="future" && rid){ payload.recurrence_id = rid; payload.recurrence_range = "THISANDFUTURE"; }
                 await this.hass.connection.sendMessagePromise(payload);
                 wsDeleted = !0;
             }
         }catch(_wsErr){ wsDeleted = !1; }
         if(wsDeleted){ this._updateEvents(); return; }
+        if(!wsDeleted && _isRec && _delScope!=="series"){ alert("Couldn't delete this occurrence. Check Home Assistant logs and browser console."); return; }
 
         // Choose calendars to try: prefer the calendar the user clicked, otherwise known calendars.
         let cals = [];
@@ -1002,6 +1024,10 @@ _rnrOpenEditDialog(){
 this._rnrEditDraft={
         // identity / target
         uid:e.uid??null,
+        recurrence_id:e.recurrence_id??null,
+        _isRecurring:!!(e.rrule),
+        _rruleText:(e.rrule||""),
+        edit_scope:"this",
         calendar:firstCal,
         old_calendar:firstCal,
         calendars:(e.calendars&&e.calendars.length?e.calendars:[]),
@@ -1408,47 +1434,67 @@ async _rnrSaveEdit(){
 
         // If we have a UID, do a true update.
         if(payload.uid){
+            const allDayU = !!d.all_day;
+            const normU = (s)=> s ? ((s+"").replace(".000Z","").replace(/Z$/,"")) : s;
+            const wsEvtU = {
+                summary:(payload.summary ?? "") || "",
+                description:(payload.description ?? "") || "",
+                location:(payload.location ?? "") || ""
+            };
+            if(allDayU){
+                const sdU=(payload.start||"").slice(0,10);
+                let edU=(payload.end||"").slice(0,10)||sdU;
+                if(edU===sdU){ try{ const dtU=new Date(sdU+"T00:00:00"); dtU.setDate(dtU.getDate()+1); edU=dtU.toISOString().slice(0,10); }catch(_e){} }
+                wsEvtU.dtstart=sdU; wsEvtU.dtend=edU;
+            }else{
+                wsEvtU.dtstart=normU(payload.start); wsEvtU.dtend=normU(payload.end);
+            }
+
+            if(d._isRecurring){
+                // Recurring series: edit only "this" occurrence or "this and following".
+                // Never edit the master by uid (moves DTSTART, drops earlier instances) and
+                // never resend a rebuilt RRULE (lossy); HA preserves the existing rule.
+                const rid = d.recurrence_id || null;
+                if(!rid){
+                    alert("This repeating event has no occurrence id, so it can't be edited safely from here. Delete and re-create it instead.");
+                    return;
+                }
+                const range = (d.edit_scope==="future") ? "THISANDFUTURE" : "THISEVENT";
+                let ok=false;
+                try{
+                    if(this.hass?.connection?.sendMessagePromise){
+                        await this.hass.connection.sendMessagePromise({type:"calendar/event/update", entity_id:cal, uid:payload.uid, event:wsEvtU, recurrence_id:rid, recurrence_range:range});
+                        ok=true;
+                    }
+                }catch(e){ try{ console.warn("[week-planner-card-plus] ws recurring update failed", e); }catch(_){} }
+                if(!ok){
+                    // Do NOT fall back to ics_calendar_tools: it edits the whole series by uid,
+                    // silently applying an occurrence-only change to every occurrence.
+                    alert("Couldn't update this occurrence. Check Home Assistant logs and browser console.");
+                    return;
+                }
+                this._rnrCloseEditDialog(); this._closeDialog(); this._updateEvents(); return;
+            }
+
+            // Non-recurring event: whole update by uid (its own DTSTART). May ADD a recurrence rule.
+            const rrRawU = ((payload.rrule||payload.recurrence_rule||"")+"").trim();
+            const rrU = rrRawU.replace(/^RRULE:/i,"").trim();
+            if(rrU) wsEvtU.rrule=rrU;
             let updated=false;
-            // Primary: native WS calendar/event/update (local_calendar, google, m365, caldav)
             try{
                 if(this.hass?.connection?.sendMessagePromise){
-                    const allDayU = !!d.all_day;
-                    const normU = (s)=> s ? ((s+"").replace(".000Z","").replace(/Z$/,"")) : s;
-                    const rrRawU = ((payload.rrule||payload.recurrence_rule||"")+"").trim();
-                    const rrU = rrRawU.replace(/^RRULE:/i,"").trim();
-                    const wsEvtU = {
-                        summary:(payload.summary ?? "") || "",
-                        description:(payload.description ?? "") || "",
-                        location:(payload.location ?? "") || ""
-                    };
-                    if(allDayU){
-                        const sdU=(payload.start||"").slice(0,10);
-                        let edU=(payload.end||"").slice(0,10)||sdU;
-                        if(edU===sdU){ try{ const dtU=new Date(sdU+"T00:00:00"); dtU.setDate(dtU.getDate()+1); edU=dtU.toISOString().slice(0,10); }catch(_e){} }
-                        wsEvtU.dtstart=sdU; wsEvtU.dtend=edU;
-                    }else{
-                        wsEvtU.dtstart=normU(payload.start); wsEvtU.dtend=normU(payload.end);
-                    }
-                    if(rrU) wsEvtU.rrule=rrU;
-                    const msgU={type:"calendar/event/update", entity_id:cal, uid:payload.uid, event:wsEvtU};
-                    if(d.recurrence_id) msgU.recurrence_id=d.recurrence_id;
-                    if(d.recurrence_range) msgU.recurrence_range=d.recurrence_range;
-                    await this.hass.connection.sendMessagePromise(msgU);
+                    await this.hass.connection.sendMessagePromise({type:"calendar/event/update", entity_id:cal, uid:payload.uid, event:wsEvtU});
                     updated=true;
                 }
             }catch(e){ try{ console.warn("[week-planner-card-plus] ws calendar/event/update failed", e); }catch(_){} }
-
-            // Fallback: ics_calendar_tools (ICS-feed calendars managed by that integration)
             if(!updated){
                 try{ await this.hass.callService("ics_calendar_tools","update_event",payload); updated=true; try{ if(!this._rnrIcsEditableEntities) this._rnrIcsEditableEntities=new Set(); if(cal) this._rnrIcsEditableEntities.add(cal); }catch(_e){} }
                 catch(e){ try{ console.warn("[week-planner-card-plus] ics_calendar_tools.update_event failed", e); }catch(_){} }
             }
-
             if(!updated){
                 alert("Edit failed. Check Home Assistant logs and browser console.");
                 return;
             }
-
             this._rnrCloseEditDialog();
             this._closeDialog();
             this._updateEvents();
@@ -1677,6 +1723,18 @@ _rnrRenderEditDialog(){
                     </select>
                 </div>
 
+                ${ d._isRecurring ? W`
+                <div class="rnr-edit-row">
+                    <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Apply changes to")}</label>
+                    <select class="rnr-edit-select"
+                        @change="${(e)=>this._rnrEditSetField("edit_scope",e.target.value)}"
+                        style="width:100%;padding:10px;border:1px solid var(--divider-color);border-radius:8px;background:var(--card-background-color);color:var(--primary-text-color);"
+                    >
+                        <option value="this" ?selected=${(d.edit_scope||"this")==="this"}>${window.__wpc_i18n_t(this,"This event only")}</option>
+                        <option value="future" ?selected=${(d.edit_scope||"this")==="future"}>${window.__wpc_i18n_t(this,"This and following events")}</option>
+                    </select>
+                </div>
+                `:W`` }
                 <ha-formfield label="${window.__wpc_i18n_t(this,"All day")}">
                     <ha-switch
                         .checked="${d.all_day??false}"
@@ -1758,7 +1816,7 @@ _rnrRenderEditDialog(){
                 <div class="rnr-edit-row" style="align-items:flex-start;">
                     <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Repeat")}</label>
                     <div style="flex:1;">
-                        <select class="rnr-edit-dt" style="height:40px;"
+                        <select class="rnr-edit-dt" style="height:40px;" ?disabled="${!!d._isRecurring}" title="${d._isRecurring?window.__wpc_i18n_t(this,"To change the repeat pattern, delete and re-create the event."):""}"
                             @change="${(e)=>{
                                 const v=(e.target.value||"none");
                                 this._rnrEditSetField("repeat_freq", v);
@@ -1787,7 +1845,7 @@ _rnrRenderEditDialog(){
                             <option value="yearly" ?selected="${(d.repeat_freq||"none")==="yearly"}">${window.__wpc_i18n_t(this,"Yearly")}</option>
                         </select>
 
-                        ${ (d.repeat_freq && d.repeat_freq!=="none") ? W`
+                        ${ (!d._isRecurring && d.repeat_freq && d.repeat_freq!=="none") ? W`
                             <div style="margin-top:10px;">
                                 <div style="display:flex; gap:10px; align-items:center;">
                                     <span style="min-width:120px; opacity:.8;">Interval</span>
