@@ -2,7 +2,7 @@
    Prevents: Failed to execute 'define' ... name 'week-planner-card-plus' has already been used
    This can happen if the same JS is loaded twice (different URL, cache-busted params, or both YAML+UI resources).
 */
-console.info("[week-planner-card-plus] loaded patched build 2026-07-24d (defaultAllDay; WS create/update/delete; recurrence-aware edit; themed delete-scope dialog)");
+console.info("[week-planner-card-plus] loaded patched build 2026-07-24e (edit scope: ha-control-select vertical)");
 (()=>{try{
   const ce = globalThis.customElements;
   if(!ce||!ce.define||!ce.get) return;
@@ -1877,15 +1877,16 @@ _rnrRenderEditDialog(){
                 </div>
 
                 ${ d._isRecurring ? W`
-                <div class="rnr-edit-row">
-                    <label class="rnr-edit-label">${window.__wpc_i18n_t(this,"Apply changes to")}</label>
-                    <select class="rnr-edit-select"
-                        @change="${(e)=>this._rnrEditSetField("edit_scope",e.target.value)}"
-                        style="width:100%;padding:10px;border:1px solid var(--divider-color);border-radius:8px;background:var(--card-background-color);color:var(--primary-text-color);"
-                    >
-                        <option value="this" ?selected=${(d.edit_scope||"this")==="this"}>${window.__wpc_i18n_t(this,"This event only")}</option>
-                        <option value="future" ?selected=${(d.edit_scope||"this")==="future"}>${window.__wpc_i18n_t(this,"This and following events")}</option>
-                    </select>
+                <div class="rnr-edit-row" style="flex-direction:column;align-items:stretch;gap:6px;">
+                    <label class="rnr-edit-label" style="width:auto;opacity:.7;font-size:.9em;">${window.__wpc_i18n_t(this,"Apply changes to")}</label>
+                    <ha-control-select
+                        vertical
+                        .label="${window.__wpc_i18n_t(this,"Apply changes to")}"
+                        .value="${d.edit_scope||"this"}"
+                        .options="${[{value:"this",label:window.__wpc_i18n_t(this,"This event only")},{value:"future",label:window.__wpc_i18n_t(this,"This and following events")}]}"
+                        @value-changed="${(e)=>this._rnrEditSetField("edit_scope",e.detail.value)}"
+                        style="width:100%;--control-select-color:var(--primary-color);"
+                    ></ha-control-select>
                 </div>
                 `:W`` }
                 <ha-formfield label="${window.__wpc_i18n_t(this,"All day")}">
