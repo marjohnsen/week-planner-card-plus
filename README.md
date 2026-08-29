@@ -1,6 +1,6 @@
 # Week Planner Card Plus
 
-**Current release: v2.0.11**
+**Current release: v2.0.12**
 
 **Week Planner Card Plus** is a fork of the excellent **Week Planner Card** by FamousWolf, with extra features aimed at a **Skylight-style family calendar dashboard**.  
 This “Plus” version adds UI behavior needed for our Skylight dashboard setup (for example: a working **Add button** + **hash-based popup routing** fixes), and it can be used with both **cloud calendars** (Google / CalDAV / etc.) and **Local Calendar (.ics)**.
@@ -28,8 +28,22 @@ For Local Calendar `.ics` add/edit/delete support, it’s designed to pair nicel
 - ✅ Per-calendar **Display in day header** (e.g. holidays as pills under the day number)
 - ✅ **Series-safe recurring edit/delete** (This event / This and following / Whole series)
 - ✅ Local Calendar edits via Home Assistant’s native `calendar/event/update` WebSocket API
+- ✅ Optional **`soonTime`** window → CSS class `soon` for upcoming events
+- ✅ Schedule/timeline **`startHour` / `endHour`** (fixed or `auto`) to hide empty hours
 - ✅ Optional pairing with **ICS Calendar Tools** as a fallback for Local Calendar `.ics`  
   https://github.com/randrcomputers/ics-calendar-tools
+
+---
+
+## Recent updates (August 2026)
+
+### v2.0.12 — soon class, timeline hours, docs for combineSimilarEvents
+
+- **`soonTime`** ([#7](https://github.com/randrcomputers/week-planner-card-plus/issues/7) — thanks [@pete-malibu](https://github.com/pete-malibu)): optional `HH:MM` window so upcoming events get CSS class `soon` (default `00:00` = no change). Style with card_mod, e.g. `.event.soon { background: ... }`
+- **`startHour` / `endHour`** ([#5](https://github.com/randrcomputers/week-planner-card-plus/issues/5) — thanks [@treiners](https://github.com/treiners)): hide empty early/late hours in schedule/timeline view. Use a number (`7`, `22`) or `"auto"`
+- **`combineSimilarEvents`** documented ([#8](https://github.com/randrcomputers/week-planner-card-plus/issues/8)): default is **`false`** (events from different calendars stay separate even with the same title/time)
+
+After updating via HACS (or copying `week-planner-card-plus.js`), **hard-refresh** the dashboard (Ctrl+F5).
 
 ---
 
@@ -109,6 +123,7 @@ If a gap is still reported, check whether **Hide days without events** is enable
 
 | Version | Notes |
 |---------|--------|
+| 2.0.12 | `soonTime` class; timeline `startHour`/`endHour`; document `combineSimilarEvents` |
 | 2.0.11 | Local Calendar native WS edit; series-safe recurring edit/delete ([PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6) by [@enieuwy](https://github.com/enieuwy)) |
 | 2.0.10 | Title + Location native inputs; edit-dialog title fallback |
 | 2.0.9 | Fortnightly repeat; `displayInHeader`; month grid alignment |
@@ -125,6 +140,9 @@ If a gap is still reported, check whether **Hide days without events** is enable
 
 - **[@FamousWolf](https://github.com/FamousWolf)** — original [Week Planner Card](https://github.com/FamousWolf/week-planner-card)
 - **[@enieuwy](https://github.com/enieuwy)** — [PR #6](https://github.com/randrcomputers/week-planner-card-plus/pull/6): Local Calendar native WS update + series-safe recurring edits/deletes (v2.0.11)
+- **[@pete-malibu](https://github.com/pete-malibu)** — [#7](https://github.com/randrcomputers/week-planner-card-plus/issues/7): `soonTime` / `soon` event class idea (v2.0.12)
+- **[@treiners](https://github.com/treiners)** — [#5](https://github.com/randrcomputers/week-planner-card-plus/issues/5): timeline `startHour` / `endHour` (v2.0.12)
+- **[@steelincable](https://github.com/steelincable)** — [#8](https://github.com/randrcomputers/week-planner-card-plus/issues/8): clarify `combineSimilarEvents` for multi-calendar lunch menus (v2.0.12)
 
 ---
 
@@ -243,6 +261,7 @@ Week Planner Card Plus also includes a **Schedule** view intended to feel like a
 ### Notes / Known quirks
 - All-day events are rendered as **pills** at the top of each day column.
 - Timed events render inside the hour grid.
+- Use **`startHour` / `endHour`** (or `"auto"`) to hide empty early/late hours — see Options below.
 - If your dashboard uses narrow columns (or long descriptions), all-day pills may visually **bleed into the next day** unless wrapping is forced via CSS.
 
 ### Required card_mod for Schedule View
@@ -336,6 +355,58 @@ Default state of the **All day** toggle in the built-in Add/Edit dialog.
 - `false` = All day starts OFF
 
 **Default:** `false`
+
+### `combineSimilarEvents` (boolean)
+
+When `true`, events with the same title + start + end from **different calendars** are merged into one chip (multi-color).
+
+When `false` (default), each calendar keeps its own event — e.g. two school lunch ICS feeds both titled “Lunch Menu” stay separate.
+
+```yaml
+combineSimilarEvents: false   # default — keep calendars separate
+calendars:
+  - entity: calendar.prairieland_lunch
+    name: Prairieland Lunch
+  - entity: calendar.parkside_lunch
+    name: Parkside Lunch
+```
+
+### `soonTime` (string, `HH:MM`)
+
+Events that **start within this duration from now** get CSS class `soon` (in addition to not being `past` / `ongoing`).
+
+- Default: `"00:00"` → `soon` is never applied (no change for existing dashboards)
+- Example: `soonTime: "01:00"` → events starting in the next hour get class `soon`
+
+Style with card_mod (no default color is applied by the card):
+
+```yaml
+card_mod:
+  style: |
+    .event.soon {
+      background: #c62828 !important;
+      color: #fff !important;
+    }
+```
+
+### `startHour` / `endHour` (number or `"auto"`)
+
+Schedule/timeline view only. Controls which hour rows are shown.
+
+- `startHour`: `0`–`23` or `"auto"` (default `0`)
+- `endHour`: `1`–`24` or `"auto"` (default `24`)
+- `"auto"` uses the earliest/latest **timed** event in the visible days (floored/ceiled to the hour)
+
+```yaml
+viewMode: schedule
+startHour: 7
+endHour: 22
+# or:
+# startHour: auto
+# endHour: auto
+```
+
+Aliases: `timelineStartHour` / `timelineEndHour`.
 
 ### `clickEmptyDayToAddPlus` (boolean)
 When `true`, empty-day / empty-space clicks open the **built-in Add dialog** (recommended).
