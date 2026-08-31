@@ -206,6 +206,22 @@ function e(e){return e&&e.__esModule?e.default:e}let t=globalThis,n=t.ShadowRoot
         pointer-events: none;
     }
 
+    ha-card.dayBox .container .day:not(.outside-month):not(.hidden-empty) {
+        box-sizing: border-box;
+        background: var(--card-background-color, #fff);
+        border: 1px solid var(--divider-color, rgba(0,0,0,0.1));
+        border-radius: var(--day-box-border-radius, 12px);
+        padding: var(--day-box-padding, 10px);
+    }
+
+    ha-card.dayBox .day.splitLayout {
+        box-sizing: border-box;
+        background: var(--card-background-color, #fff);
+        border: 1px solid var(--divider-color, rgba(0,0,0,0.1));
+        border-radius: var(--day-box-border-radius, 12px);
+        padding: var(--day-box-padding, 10px);
+    }
+
     .container .day .date .text {
         font-size: var(--day-date-text-font-size);
     }
@@ -706,7 +722,7 @@ window.__wpc_i18n_apply = (card) => {
 };
 /* ===== end i18n helper ===== */
 
-customElements.define("week-planner-card-plus",class extends es{static styles=i8;_initialized=!1;_loading=0;_events={};_calendarEvents={};_calendars;_numberOfDays;_numberOfDaysIsMonth;_updateInterval;_noCardBackground;_eventBackground;_compact;_language;_weather;_dateFormat;_timeFormat;_locationLink;_startDate;_hideWeekend;_startingDay;_startingDayOffset;_weatherForecast=null;_showLocation;_hidePastEvents;_hideDaysWithoutEvents;_hideTodayWithoutEvents;_filter;_filterText;_replaceTitleText;_combineSimilarEvents;_soonTime;_startHour;_endHour;_showLegend;_legendToggle;_actions;_columns;_loader;_showNavigation;_navigationOffset=0;_updateEventsTimeouts=[];static getConfigElement(){return document.createElement("week-planner-card-plus-editor")}static getStubConfig(){return{calendars:[],days:7,startingDay:"today",startingDayOffset:0,showWeekDayText:!0,hideWeekend:!1,noCardBackground:!1,compact:!1,weather:{showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1,useTwiceDaily:!1},locale:"en",showLocation:!1,hidePastEvents:!1,hideDaysWithoutEvents:!1,hideTodayWithoutEvents:!1,combineSimilarEvents:!1,soonTime:"00:00",startHour:0,endHour:24,showLegend:!1,tapEmptyDayToAdd:!1,clickEmptyDayToAddPlus:!1,defaultAllDay:!1}}static get properties(){return{_days:{type:Array},_config:{type:Object},_error:{type:String},_currentEventDetails:{type:Object},_hideCalendars:{type:Array},_rnrEditOpen:{type:Boolean},_rnrEditDraft:{type:Object}}}setConfig(e){if(this._config=e,!e.calendars)throw Error("No calendars are configured");this._numberOfDaysIsMonth=this._isNumberOfDaysMonth(e.days??7),this._title=e.title??null,this._calendars=e.calendars,this._weather=this._getWeatherConfig(e.weather),this._numberOfDays=this._getNumberOfDays(e.days??7),this._hideWeekend=e.hideWeekend??!1,this._showNavigation=e.showNavigation??!1,this._startingDay=e.startingDay??"today",this._startingDayOffset=e.startingDayOffset??0,this._showWeekDayText=e.showWeekDayText??!0,this._startDate=this._getStartDate(),this._updateInterval=e.updateInterval??60,this._noCardBackground=e.noCardBackground??!1,this._eventBackground=e.eventBackground??"var(--card-background-color, inherit)",this._compact=e.compact??!1,this._dayFormat=e.dayFormat??null,this._dateFormat=e.dateFormat??"cccc d LLLL yyyy",this._timeFormat=e.timeFormat??"HH:mm",this._locationLink=e.locationLink??"https://www.google.com/maps/search/?api=1&query=",this._showTitle=e.showTitle??!0,this._showDescription=e.showDescription??!1,this._showLocation=e.showLocation??!1,this._hidePastEvents=e.hidePastEvents??!1,this._hideDaysWithoutEvents=e.hideDaysWithoutEvents??!1,this._hideTodayWithoutEvents=e.hideTodayWithoutEvents??!1,this._filter=e.filter??!1,this._filterText=e.filterText??!1,this._replaceTitleText=e.replaceTitleText??!1,this._combineSimilarEvents=e.combineSimilarEvents??!1,this._soonTime="string"==typeof e.soonTime&&/^(?:[01]?\d|2[0-3]):[0-5]\d$/.test(e.soonTime)?e.soonTime.padStart(5,"0"):"00:00",this._startHour=(()=>{const v=e.startHour??e.timelineStartHour;if(v==null||v==="")return 0;if("string"==typeof v&&"auto"===v.toLowerCase().trim())return"auto";const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(23,Math.floor(n))):0})(),this._endHour=(()=>{const v=e.endHour??e.timelineEndHour;if(v==null||v==="")return 24;if("string"==typeof v&&"auto"===v.toLowerCase().trim())return"auto";const n=Number(v);return Number.isFinite(n)?Math.max(1,Math.min(24,Math.floor(n))):24})(),this._showLegend=e.showLegend??!1,this._legendToggle=e.legendToggle??!1,this._actions=e.actions??!1,this._columns=e.columns??{},this._maxEvents=e.maxEvents??!1,this._maxDayEvents=e.maxDayEvents??!1,this._hideCalendars=(e.calendars||[]).reduce((e,t)=>(t.initiallyHidden&&t.entity&&e.push(t.entity),e),[]),e.locale&&(eh.Settings.defaultLocale=e.locale),this._language=Object.assign({},{fullDay:"Entire day",noEvents:"No events",moreEvents:"More events",today:"Today",tomorrow:"Tomorrow",yesterday:"Yesterday",sunday:eh.Info.weekdays("long")[6],monday:eh.Info.weekdays("long")[0],tuesday:eh.Info.weekdays("long")[1],wednesday:eh.Info.weekdays("long")[2],thursday:eh.Info.weekdays("long")[3],friday:eh.Info.weekdays("long")[4],saturday:eh.Info.weekdays("long")[5]},e.texts??{}),this._calendarErrors=[],this._rnrTapEmptyDayToAdd=e.tapEmptyDayToAdd??!1,this._rnrClickEmptyDayToAddPlus=e.clickEmptyDayToAddPlus??!1,this._rnrDefaultAllDay=e.defaultAllDay??!1,this.__rnrCfgLogged||(console.info('[week-planner-card-plus] cfg tapEmptyDayToAdd=',this._rnrTapEmptyDayToAdd,' clickEmptyDayToAddPlus=',this._rnrClickEmptyDayToAddPlus),this.__rnrCfgLogged=!0),this._rnrAddEventPopupHash=e.addEventPopupHash??"#addcalendarevent",this._rnrAddEventHelpers=e.addEventHelpers??null,this._daysFromConfig=e.days,this._responsive=e.responsive??!1,this._minDayWidth=e.minDayWidth??120,this._maxDays=e.maxDays??7,this._applyResponsiveDays&&queueMicrotask?queueMicrotask(()=>this._applyResponsiveDays()):setTimeout(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()},0)}connectedCallback(){super.connectedCallback&&super.connectedCallback();this._setupResponsive&&this._setupResponsive();}disconnectedCallback(){this._teardownResponsive&&this._teardownResponsive();super.disconnectedCallback&&super.disconnectedCallback();}_setupResponsive(){if(!this._responsive)return;if(this._resizeObs)return;try{this._resizeObs=new ResizeObserver(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()});this._resizeObs.observe(this)}catch(e){this._winResizeHandler=()=>{this._applyResponsiveDays&&this._applyResponsiveDays()};window.addEventListener('resize',this._winResizeHandler)}}_teardownResponsive(){if(this._resizeObs){try{this._resizeObs.disconnect()}catch(e){}this._resizeObs=null}if(this._winResizeHandler){window.removeEventListener('resize',this._winResizeHandler);this._winResizeHandler=null}}_applyResponsiveDays(){if(!this._responsive)return;if(this._daysFromConfig&&this._isNumberOfDaysMonth(this._daysFromConfig))return;let e=0;try{e=this.getBoundingClientRect().width}catch(t){}e=e||this.offsetWidth||window.innerWidth||0;if(!e)return;let t=Number(this._minDayWidth)||120,n=Number(this._maxDays)||7;let r=Math.floor(e/t);r<1&&(r=1),r>n&&(r=n);this._numberOfDays!==r&&(this._numberOfDays=r,this.requestUpdate&&this.requestUpdate())}_isNumberOfDaysMonth(e){return"month"===String(e).toLowerCase().trim()}_getWeatherConfig(e){if(!e||"string"!=typeof e&&"object"!=typeof e)return null;let t={entity:null,showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1};return("string"==typeof e?t.entity=e:Object.assign(t,e),t.hasOwnProperty("entity")&&null!==t.entity)?t:null}render(){this._loader||(this._loader=this._getLoader()),this._initialized||(this._initialized=!0,this._waitForHassAndConfig());let e=[];this._noCardBackground&&e.push("nobackground"),this._compact&&e.push("compact");let t=["--event-background-color: "+this._eventBackground+";"];return this._columns.extraLarge&&t.push("--days-columns: "+this._columns.extraLarge+";"),this._columns.large&&t.push("--days-columns-lg: "+this._columns.large+";"),this._columns.medium&&t.push("--days-columns-md: "+this._columns.medium+";"),this._columns.small&&t.push("--days-columns-sm: "+this._columns.small+";"),this._columns.extraSmall&&t.push("--days-columns-xs: "+this._columns.extraSmall+";"),W`
+customElements.define("week-planner-card-plus",class extends es{static styles=i8;_initialized=!1;_loading=0;_events={};_calendarEvents={};_calendars;_numberOfDays;_numberOfDaysIsMonth;_updateInterval;_noCardBackground;_eventBackground;_compact;_language;_weather;_dateFormat;_timeFormat;_locationLink;_startDate;_hideWeekend;_startingDay;_startingDayOffset;_weatherForecast=null;_showLocation;_hidePastEvents;_hideDaysWithoutEvents;_hideTodayWithoutEvents;_filter;_filterText;_replaceTitleText;_combineSimilarEvents;_soonTime;_startHour;_endHour;_showLegend;_legendToggle;_actions;_columns;_loader;_showNavigation;_navigationOffset=0;_updateEventsTimeouts=[];static getConfigElement(){return document.createElement("week-planner-card-plus-editor")}static getStubConfig(){return{calendars:[],days:7,startingDay:"today",startingDayOffset:0,showWeekDayText:!0,hideWeekend:!1,noCardBackground:!1,compact:!1,weather:{showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1,useTwiceDaily:!1},locale:"en",showLocation:!1,hidePastEvents:!1,hideDaysWithoutEvents:!1,hideTodayWithoutEvents:!1,combineSimilarEvents:!1,soonTime:"00:00",startHour:0,endHour:24,showLegend:!1,tapEmptyDayToAdd:!1,clickEmptyDayToAddPlus:!1,defaultAllDay:!1}}static get properties(){return{_days:{type:Array},_config:{type:Object},_error:{type:String},_currentEventDetails:{type:Object},_hideCalendars:{type:Array},_rnrEditOpen:{type:Boolean},_rnrEditDraft:{type:Object}}}setConfig(e){if(this._config=e,!e.calendars)throw Error("No calendars are configured");this._numberOfDaysIsMonth=this._isNumberOfDaysMonth(e.days??7),this._title=e.title??null,this._calendars=e.calendars,this._weather=this._getWeatherConfig(e.weather),this._numberOfDays=this._getNumberOfDays(e.days??7),this._hideWeekend=e.hideWeekend??!1,this._showNavigation=e.showNavigation??!1,this._startingDay=e.startingDay??"today",this._startingDayOffset=e.startingDayOffset??0,this._showWeekDayText=e.showWeekDayText??!0,this._startDate=this._getStartDate(),this._updateInterval=e.updateInterval??60,this._noCardBackground=e.noCardBackground??!1,this._eventBackground=e.eventBackground??"var(--card-background-color, inherit)",this._compact=e.compact??!1,this._dayFormat=e.dayFormat??null,this._dateFormat=e.dateFormat??"cccc d LLLL yyyy",this._timeFormat=e.timeFormat??"HH:mm",this._locationLink=e.locationLink??"https://www.google.com/maps/search/?api=1&query=",this._showTitle=e.showTitle??!0,this._showDescription=e.showDescription??!1,this._showLocation=e.showLocation??!1,this._hidePastEvents=e.hidePastEvents??!1,this._hideDaysWithoutEvents=e.hideDaysWithoutEvents??!1,this._hideTodayWithoutEvents=e.hideTodayWithoutEvents??!1,this._filter=e.filter??!1,this._filterText=e.filterText??!1,this._replaceTitleText=e.replaceTitleText??!1,this._combineSimilarEvents=e.combineSimilarEvents??!1,this._soonTime="string"==typeof e.soonTime&&/^(?:[01]?\d|2[0-3]):[0-5]\d$/.test(e.soonTime)?e.soonTime.padStart(5,"0"):"00:00",this._startHour=(()=>{const v=e.startHour??e.timelineStartHour;if(v==null||v==="")return 0;if("string"==typeof v&&"auto"===v.toLowerCase().trim())return"auto";const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(23,Math.floor(n))):0})(),this._endHour=(()=>{const v=e.endHour??e.timelineEndHour;if(v==null||v==="")return 24;if("string"==typeof v&&"auto"===v.toLowerCase().trim())return"auto";const n=Number(v);return Number.isFinite(n)?Math.max(1,Math.min(24,Math.floor(n))):24})(),this._showLegend=e.showLegend??!1,this._legendToggle=e.legendToggle??!1,this._actions=e.actions??!1,this._columns=e.columns??{},this._maxEvents=e.maxEvents??!1,this._maxDayEvents=e.maxDayEvents??!1,this._hideCalendars=(e.calendars||[]).reduce((e,t)=>(t.initiallyHidden&&t.entity&&e.push(t.entity),e),[]),e.locale&&(eh.Settings.defaultLocale=e.locale),this._language=Object.assign({},{fullDay:"Entire day",noEvents:"No events",moreEvents:"More events",today:"Today",tomorrow:"Tomorrow",yesterday:"Yesterday",sunday:eh.Info.weekdays("long")[6],monday:eh.Info.weekdays("long")[0],tuesday:eh.Info.weekdays("long")[1],wednesday:eh.Info.weekdays("long")[2],thursday:eh.Info.weekdays("long")[3],friday:eh.Info.weekdays("long")[4],saturday:eh.Info.weekdays("long")[5]},e.texts??{}),this._calendarErrors=[],this._rnrTapEmptyDayToAdd=e.tapEmptyDayToAdd??!1,this._rnrClickEmptyDayToAddPlus=e.clickEmptyDayToAddPlus??!1,this._rnrDefaultAllDay=e.defaultAllDay??!1,this._rnrDayBox=e.dayBox??!1,this.__rnrCfgLogged||(console.info('[week-planner-card-plus] cfg tapEmptyDayToAdd=',this._rnrTapEmptyDayToAdd,' clickEmptyDayToAddPlus=',this._rnrClickEmptyDayToAddPlus),this.__rnrCfgLogged=!0),this._rnrAddEventPopupHash=e.addEventPopupHash??"#addcalendarevent",this._rnrAddEventHelpers=e.addEventHelpers??null,this._daysFromConfig=e.days,this._responsive=e.responsive??!1,this._minDayWidth=e.minDayWidth??120,this._maxDays=e.maxDays??7,this._applyResponsiveDays&&queueMicrotask?queueMicrotask(()=>this._applyResponsiveDays()):setTimeout(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()},0)}connectedCallback(){super.connectedCallback&&super.connectedCallback();this._setupResponsive&&this._setupResponsive();}disconnectedCallback(){this._teardownResponsive&&this._teardownResponsive();super.disconnectedCallback&&super.disconnectedCallback();}_setupResponsive(){if(!this._responsive)return;if(this._resizeObs)return;try{this._resizeObs=new ResizeObserver(()=>{this._applyResponsiveDays&&this._applyResponsiveDays()});this._resizeObs.observe(this)}catch(e){this._winResizeHandler=()=>{this._applyResponsiveDays&&this._applyResponsiveDays()};window.addEventListener('resize',this._winResizeHandler)}}_teardownResponsive(){if(this._resizeObs){try{this._resizeObs.disconnect()}catch(e){}this._resizeObs=null}if(this._winResizeHandler){window.removeEventListener('resize',this._winResizeHandler);this._winResizeHandler=null}}_applyResponsiveDays(){if(!this._responsive)return;if(this._daysFromConfig&&this._isNumberOfDaysMonth(this._daysFromConfig))return;let e=0;try{e=this.getBoundingClientRect().width}catch(t){}e=e||this.offsetWidth||window.innerWidth||0;if(!e)return;let t=Number(this._minDayWidth)||120,n=Number(this._maxDays)||7;let r=Math.floor(e/t);r<1&&(r=1),r>n&&(r=n);this._numberOfDays!==r&&(this._numberOfDays=r,this.requestUpdate&&this.requestUpdate())}_isNumberOfDaysMonth(e){return"month"===String(e).toLowerCase().trim()}_getWeatherConfig(e){if(!e||"string"!=typeof e&&"object"!=typeof e)return null;let t={entity:null,showCondition:!0,showTemperature:!1,showLowTemperature:!1,roundTemperature:!1};return("string"==typeof e?t.entity=e:Object.assign(t,e),t.hasOwnProperty("entity")&&null!==t.entity)?t:null}render(){this._loader||(this._loader=this._getLoader()),this._initialized||(this._initialized=!0,this._waitForHassAndConfig());let e=[];this._noCardBackground&&e.push("nobackground"),this._compact&&e.push("compact"),this._rnrDayBox&&e.push("dayBox");let t=["--event-background-color: "+this._eventBackground+";"];return this._columns.extraLarge&&t.push("--days-columns: "+this._columns.extraLarge+";"),this._columns.large&&t.push("--days-columns-lg: "+this._columns.large+";"),this._columns.medium&&t.push("--days-columns-md: "+this._columns.medium+";"),this._columns.small&&t.push("--days-columns-sm: "+this._columns.small+";"),this._columns.extraSmall&&t.push("--days-columns-xs: "+this._columns.extraSmall+";"),W`
             <ha-card class="${e.join(" ")}" style="${t.join(" ")}">
                 <div class="card-content">
                     ${this._error?W`<div class="errors"><ha-alert alert-type="error">${this._error}</ha-alert></div>`:""}
@@ -2123,6 +2139,25 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
                             `)}
                         ${this.addButton("Add calendar","mdi:plus",()=>{let e=this.getConfigValue("calendars").length;this.setConfigValue("calendars."+e,{})})}
                     `)}
+${this.addExpansionPanel("Layout",W`
+                        <div style="display:flex;flex-direction:column;margin:8px 0;">
+                            <label style="font-size:0.85em;opacity:.8;margin-bottom:4px;">${window.__wpc_i18n_t(this,"View mode")}</label>
+                            <select
+                                style="padding:8px;border-radius:4px;border:1px solid var(--divider-color,#ccc);background:var(--card-background-color,#fff);color:var(--primary-text-color,#000);font:inherit;"
+                                .value="${this.getConfigValue("viewMode","grid")}"
+                                @change="${(e)=>{this.setConfigValue("viewMode",e.target.value)}}"
+                            >
+                                <option value="grid">Grid (default)</option>
+                                <option value="split">Split layout (today + tomorrow, then the rest)</option>
+                                <option value="schedule">Schedule</option>
+                                <option value="timelineDay">Timeline (day)</option>
+                                <option value="timelineWeek">Timeline (week)</option>
+                            </select>
+                        </div>
+                        ${this.addTextField("splitTopColumns","Split layout: days in first row","number","2")}
+                        ${this.addTextField("splitBottomColumns","Split layout: days in second row","number","5")}
+                        ${this.addBooleanField("splitWeatherInline","Split layout: show weather on the same line as date (off = weather on its own line below)")}
+                    `)}
                 ${this.addExpansionPanel("Days",W`
                         ${this.addTextField("days","Days")}
                         ${this.addSelectField("startingDay","Starting day",[{value:"today",label:"Today"},{value:"tomorrow",label:"Tomorrow"},{value:"yesterday",label:"Yesterday"},{value:"sunday",label:"Sunday"},{value:"monday",label:"Monday"},{value:"tuesday",label:"Tuesday"},{value:"wednesday",label:"Wednesday"},{value:"thursday",label:"Thursday"},{value:"friday",label:"Friday"},{value:"saturday",label:"Saturday"},{value:"month",label:"Month"}],!0)}
@@ -2171,10 +2206,11 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
                         ${this.addTextField("columns.small","Small (>= 640px)","number")}
                         ${this.addTextField("columns.extraSmall","Extra small (< 640px)","number")}
                     `)}
-                ${this.addExpansionPanel("Appearance",W`
+${this.addExpansionPanel("Appearance",W`
                         ${this.addBooleanField("noCardBackground","No card background")}
                         ${this.addTextField("eventBackground","Override events background color")}
                         ${this.addBooleanField("compact","Compact mode")}
+                        ${this.addBooleanField("dayBox","Box each day (rounded border)")}
                     `)}
                 ${this.addExpansionPanel("Legend",W`
                         ${this.addBooleanField("showLegend","Show legend")}
@@ -2232,8 +2268,9 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
             <ha-select
                 name="${e}"
                 label="${window.__wpc_i18n_t(this,(t??e))}"
-                value="${this.getConfigValue(e,r)}"
+                .value="${this.getConfigValue(e,r)}"
                 .clearable="${i}"
+                @selected="${this._valueChanged}"
                 @change="${this._valueChanged}"
                 @closed="${e=>{e.stopPropagation()}}"
             >
@@ -2286,6 +2323,10 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
     const _vmKey=_vmRaw.trim().toLowerCase();
     const _vmMap={
       "grid":"grid",
+      "split":"split",
+      "splitlayout":"split",
+      "split-layout":"split",
+      "split_layout":"split",
       "schedule":"schedule",
       "skylightschedule":"skylightSchedule",
       "timelineday":"timelineDay",
@@ -2312,6 +2353,9 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
     }
     if(m==="optionD"||m==="schedule"||m==="skylight_d"){
       return this._rnrRenderScheduleDays?.() ?? _origRenderDays.call(this);
+    }
+    if(m==="split"){
+      return this._rnrRenderSplitDays?.() ?? _origRenderDays.call(this);
     }
     return _origRenderDays.call(this);
   };
@@ -2416,6 +2460,96 @@ _closeDialog(){this._currentEventDetails=null,this._rnrEditOpen=!1,this._rnrEdit
         `})}
     `;
   }
+
+  const _origRenderWeekDays=Card.prototype._renderWeekDays;
+  Card.prototype._renderWeekDays=function(){
+    if(this._rnrViewMode==="split") return W``;
+    return _origRenderWeekDays.call(this);
+  };
+
+  Card.prototype._rnrRenderSplitDayCell=function(d){
+    if(!d) return W``;
+    if(d.isOutsideMonth) return W``;
+    if(this._hideDaysWithoutEvents&&d.events.length===0&&(this._hideTodayWithoutEvents||!this._isToday(d.date))){
+      return W`<div class="day splitLayout ${d.class} hidden-empty" aria-hidden="true"></div>`;
+    }
+    return W`
+      <div class="day splitLayout ${d.class}"
+           @click="${t=>this._rnrHandleDayClick(t,d)}"
+           data-date="${d.date.day}" data-weekday="${d.date.weekday}"
+           data-month="${d.date.month}" data-year="${d.date.year}" data-week="${d.date.weekNumber}">
+        <div class="splitHeader">
+          <div class="date">
+            ${this._dayFormat?ed(d.date.toFormat(this._dayFormat)):W`
+              <span class="number">${d.date.day}.</span>
+              <span class="text">${this._getWeekDayText(d.date)}</span>
+            `}
+          </div>
+          ${d.weather?W`
+            <div class="splitWeather" @click="${this._handleWeatherClick}">
+              ${this._weather?.showTemperature||this._weather?.showLowTemperature?W`
+                <span class="temperature">
+                  ${this._weather?.showTemperature?W`<span class="high">${d.weather.temperature}°</span>`:""}
+                  ${this._weather?.showLowTemperature?W`<span class="low">${d.weather.templow}°</span>`:""}
+                </span>
+              `:""}
+              ${this._weather?.showCondition?W`<span class="icon"><img src="${d.weather.icon}" alt="${d.weather.condition}"></span>`:""}
+            </div>
+          `:""}
+        </div>
+        ${this._rnrRenderDayHeaderEvents(d)}
+        <div class="events">
+          ${this._renderEvents(d)}
+        </div>
+      </div>
+    `;
+  };
+
+  Card.prototype._rnrRenderSplitDays=function(){
+    if(!this._days) return W``;
+
+    const cfg=(this&&this._config)||{};
+    let topCount=Number(cfg.splitTopColumns??2); if(!Number.isFinite(topCount)||topCount<1) topCount=2;
+    let bottomCount=Number(cfg.splitBottomColumns??5); if(!Number.isFinite(bottomCount)||bottomCount<1) bottomCount=5;
+
+    const days=this._days.filter(d=>!d.isOutsideMonth);
+    const topDays=days.slice(0,topCount);
+    const bottomDays=days.slice(topCount,topCount+bottomCount);
+    const weatherInline=!!cfg.splitWeatherInline;
+
+    const style=W`<style>
+      .splitWrap{display:flex;flex:1 1 100%;flex-direction:column;gap:var(--days-spacing);width:100%;min-width:0;}
+      .splitRow{display:grid;gap:var(--days-spacing);width:100%;min-width:0;}
+      .splitRow.top{grid-template-columns:repeat(${topDays.length||1},minmax(0,1fr));}
+      .splitRow.bottom{grid-template-columns:repeat(${bottomDays.length||1},minmax(0,1fr));}
+      .container .day.splitLayout{width:auto;margin:0;min-width:0;display:flex;flex-direction:column;}
+      .container .day.splitLayout .splitHeader{display:flex;${weatherInline?"align-items:center;justify-content:space-between;flex-wrap:nowrap;":"flex-direction:column;align-items:flex-start;"}gap:${weatherInline?"6px":"2px"};}
+      .container .day.splitLayout .date{display:flex;align-items:baseline;gap:6px;min-width:0;${weatherInline?"flex:0 1 auto;":"flex:1 1 auto;"}}
+      .container .day.splitLayout .date .number{font-size:var(--day-date-number-font-size);line-height:var(--day-date-number-line-height);}
+      .container .day.splitLayout .date .text{font-size:var(--day-date-text-font-size);}
+      .container .day.splitLayout .splitWeather{display:flex;align-items:center;gap:4px;font-size:var(--weather-temperature-font-size);cursor:pointer;white-space:nowrap;}
+      .container .day.splitLayout .splitWeather .icon img{max-width:var(--weather-icon-size);max-height:var(--weather-icon-size);vertical-align:middle;}
+      .container .day.splitLayout .splitWeather .temperature .low:before{content:var(--weather-temperature-separator);}
+      .container .day.splitLayout .events{margin-top:var(--events-margin-top);display:flex;flex-direction:column;}
+      @container weekplanner (width <= 640px){
+        .splitRow.bottom{grid-template-columns:repeat(2,minmax(0,1fr));}
+      }
+    </style>`;
+
+    return W`
+      ${style}
+      <div class="splitWrap">
+        <div class="splitRow top">
+          ${topDays.map(d=>this._rnrRenderSplitDayCell(d))}
+        </div>
+        ${bottomDays.length?W`
+          <div class="splitRow bottom">
+            ${bottomDays.map(d=>this._rnrRenderSplitDayCell(d))}
+          </div>
+        `:""}
+      </div>
+    `;
+  };
 
   Card.prototype._rnrRenderTimelineDays=function(){
     const days=this._days||[];

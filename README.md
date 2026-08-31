@@ -408,6 +408,39 @@ endHour: 22
 
 Aliases: `timelineStartHour` / `timelineEndHour`.
 
+### `viewMode: split` (split layout)
+
+Renders the days in two rows: the first row shows **today and tomorrow**, the second row shows the **remaining days**.
+
+Each day is rendered as:
+
+```
+12. Monday
+14° <weather icon>
+event 1
+event 2
+...
+```
+
+```yaml
+type: custom:week-planner-card-plus
+viewMode: split
+days: 7
+weather:
+  entity: weather.home
+  showCondition: true
+  showTemperature: true
+calendars:
+  - entity: calendar.family_calendar
+```
+
+Optional overrides:
+
+- `splitTopColumns`: number of days in the first row (default `2`)
+- `splitBottomColumns`: number of days in the second row (default `5`)
+
+Aliases for the mode: `split`, `splitLayout`, `split-layout`, `split_layout`.
+
 ### `clickEmptyDayToAddPlus` (boolean)
 When `true`, empty-day / empty-space clicks open the **built-in Add dialog** (recommended).
 
